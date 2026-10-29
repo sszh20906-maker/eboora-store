@@ -1,45 +1,10 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Your download | Eboora-Store</title>
-<meta name="theme-color" content="#111827">
-<style>
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:#1F3DFF;color:#101426;min-height:100vh;display:grid;place-items:center;padding:20px}
-.card{background:#fff;border-radius:20px;padding:36px 28px;max-width:480px;width:100%;text-align:center;box-shadow:10px 10px 0 #FFD23F}
-h1{margin:0 0 10px;font-size:1.7rem;line-height:1.15}
-p{color:#586082;line-height:1.6;margin:8px 0}
-.ic{width:64px;height:64px;border-radius:50%;background:#EEF0FF;color:#1F3DFF;display:grid;place-items:center;font-size:2rem;margin:0 auto 16px}
-.ic.ok{background:#E5F7EC;color:#12A150}.ic.bad{background:#FDECEE;color:#D0364B}
-.dl{display:block;margin:20px 0 6px;background:#FFD23F;color:#101426;font-weight:700;font-size:1.1rem;padding:17px 20px;border-radius:12px;text-decoration:none;box-shadow:0 5px 0 #C99F0B}
-.small{font-size:.9rem}
-@keyframes spin{to{transform:rotate(360deg)}} .spin{animation:spin 1s linear infinite;display:inline-block}
-@media(prefers-reduced-motion:reduce){.spin{animation:none}}
-</style>
-<script>
 const CONFIG = {pixelId:"YOUR_PIXEL_ID",productId:"eboora-product",productName:"",email:"support@eboora.store"};
-</script>
-<script>
 function initPixel(){
   if (CONFIG.pixelId && CONFIG.pixelId !== "YOUR_PIXEL_ID" && !window._ebooraPixelLoaded) {
     !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
     fbq('init', CONFIG.pixelId); fbq('track', 'PageView'); window._ebooraPixelLoaded=true;
   }
 }
-</script>
-</head>
-<body>
-<main class="card" aria-live="polite">
-  <div class="ic" id="ic"><span class="spin">⟳</span></div>
-  <h1 id="title">Confirming your payment…</h1>
-  <p id="msg">Please wait a few seconds and keep this page open.</p>
-  <a class="dl" id="dl" hidden target="_blank" rel="noopener">Download your files</a>
-  <p class="small" id="note" hidden></p>
-  <p class="small">Need help? <a id="mail"></a></p>
-</main>
-<script>
 const $=id=>document.getElementById(id);
 $("mail").textContent=CONFIG.email; $("mail").href="mailto:"+CONFIG.email;
 const orderId=new URLSearchParams(location.search).get("order_id");
@@ -54,7 +19,7 @@ function done(d){
     $("dl").href=d.download_url; $("dl").hidden=false;
   }
   $("note").hidden=false;
-  $("note").textContent="We have also emailed this link"+(d.email_hint?" to "+d.email_hint:"")+". Check spam if you do not see it in 5 minutes.";
+  $("note").textContent="We have also emailed this link"+(d.email_hint?" to "+d.email_hint:"")+". Check spam if you do not see it in 5 minutes. The link stays valid for 30 days; reopening this page gives you a fresh one.";
   // Purchase: fired only after the server confirmed PAID, with the real paid amount.
   // eventID = order_id, so Meta de-duplicates it against the webhook (server) event.
   const key="purchase_"+orderId;
@@ -77,13 +42,10 @@ async function check(attempt){
   }
 }
 async function start(){
-  try{const r=await fetch('/store-config.json',{cache:'no-store'});if(r.ok){const c=await r.json();CONFIG.pixelId=c.pixelId||CONFIG.pixelId;CONFIG.productId=c.productId||CONFIG.productId;CONFIG.productName=c.productName||CONFIG.productName;CONFIG.email=c.email||CONFIG.email;$('mail').textContent=CONFIG.email;$('mail').href='mailto:'+CONFIG.email;}}
+  try{let r=await fetch('/api/config',{cache:'no-store'});if(!r.ok)r=await fetch('/store-config.json',{cache:'no-store'});if(r.ok){const c=await r.json();CONFIG.pixelId=c.pixelId||CONFIG.pixelId;CONFIG.productId=c.productId||CONFIG.productId;CONFIG.productName=c.productName||CONFIG.productName;CONFIG.email=c.email||CONFIG.email;if(c.whatsapp){$('wa').href='https://wa.me/'+String(c.whatsapp).replace(/\D/g,'');$('waWrap').hidden=false;}$('mail').textContent=CONFIG.email;$('mail').href='mailto:'+CONFIG.email;}}
   catch(_){}
   initPixel();
   if(!orderId){view("bad","!","Open this page after payment","Your download link is sent to your email right after payment. Lost it? Write to us and we will resend it.");}
   else{check(0)}
 }
 start();
-</script>
-</body>
-</html>

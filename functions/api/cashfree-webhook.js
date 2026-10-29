@@ -1,6 +1,8 @@
 // POST /api/cashfree-webhook
 // Cashfree-signed payment webhook -> verified D1 order state -> private download email + Meta CAPI.
 import { json, makeDownloadUrl, amountMatches, constantTimeEqual } from "../_lib/commerce.js";
+import { readStoredConfig } from "../_lib/settings.js";
+import { redeemCoupon } from "../_lib/coupons.js";
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
 
@@ -40,6 +42,30 @@ async function sendDownloadEmail(env, record, orderId, downloadUrl) {
     console.error("Resend failed", response.status, await response.text());
     throw new Error("Download email delivery failed.");
   }
+}
+
+// Owner alert for every confirmed sale. Sent once per order; if sending fails, the claim is released so a retry can send it.
+async function sendOwnerSaleEmail(env, record, orderId, amount, currency, phone) {
+  const to = env.OWNER_EMAIL || (await readStoredConfig(env))?.email;
+  if (!to || !env.RESEND_API_KEY || !env.FROM_EMAIL) return;
+  const product = env.PRODUCT_NAME || "your product";
+  const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
+<h2 style="margin:0 0 8px">New sale: ${esc(product)}</h2>
+<p><strong>Amount:</strong> ${esc(currency)} ${esc(amount)}<br>
+<strong>Buyer:</strong> ${esc(record.customer_name)}<br>
+<strong>Email:</strong> ${esc(record.customer_email)}<br>
+<strong>Phone:</strong> ${esc(phone)}<br>
+<strong>Order ID:</strong> ${esc(orderId)}</p></div>`;
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.RESEND_API_KEY}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": `owner-sale-${orderId}`
+    },
+    body: JSON.stringify({ from: env.FROM_EMAIL, to: [to], subject: `New sale: ${product} (${orderId})`, html })
+  });
+  if (!response.ok) throw new Error("Owner alert email failed with status " + response.status);
 }
 
 const sha256 = async (value) => {
@@ -82,6 +108,20 @@ async function sendMetaPurchase(env, record, orderId, amount, currency, customer
   return "SENT";
 }
 
+// A failed payment attempt. Only an unpaid order can become FAILED, so a late failure event never downgrades a paid order.
+async function markFailed(env, body) {
+  const orderId = String(body.data?.order?.order_id || "");
+  if (!/^[A-Za-z0-9_-]{3,80}$/.test(orderId)) return new Response("missing order id", { status: 400 });
+  if (!env.ORDERS_DB) return new Response("order storage unavailable", { status: 503 });
+  try {
+    await env.ORDERS_DB.prepare("UPDATE orders SET status = 'FAILED', updated_at = datetime('now') WHERE order_id = ? AND status = 'CREATED'").bind(orderId).run();
+    return new Response("ok", { status: 200 });
+  } catch (error) {
+    console.error("Could not mark order failed", orderId, error);
+    return new Response("database update failed", { status: 503 });
+  }
+}
+
 export async function onRequestPost({ request, env }) {
   const rawBody = await request.text();
   const valid = await validCashfreeSignature(
@@ -95,6 +135,7 @@ export async function onRequestPost({ request, env }) {
   let body;
   try { body = JSON.parse(rawBody); }
   catch { return new Response("bad json", { status: 400 }); }
+  if (body.type === "PAYMENT_FAILED_WEBHOOK") return markFailed(env, body);
   if (body.type !== "PAYMENT_SUCCESS_WEBHOOK") return new Response("ignored", { status: 200 });
   if (!env.ORDERS_DB) {
     console.error("Webhook received but ORDERS_DB is not configured");
@@ -153,6 +194,29 @@ export async function onRequestPost({ request, env }) {
   } catch (error) {
     failed = true;
     console.error("Meta Purchase event processing failed", orderId, error);
+  }
+
+  // Owner alert: claim the order first so duplicate webhooks cannot send it twice.
+  try {
+    const claim = await env.ORDERS_DB.prepare("INSERT OR IGNORE INTO order_notifications (order_id, kind) VALUES (?, 'owner_sale')").bind(orderId).run();
+    if (claim?.meta?.changes === 1) {
+      try {
+        await sendOwnerSaleEmail(env, record, orderId, Number(record.amount), record.currency, customer.customer_phone || record.customer_phone);
+      } catch (error) {
+        failed = true;
+        console.error("Owner sale alert failed", orderId, error);
+        await env.ORDERS_DB.prepare("DELETE FROM order_notifications WHERE order_id = ? AND kind = 'owner_sale'").bind(orderId).run();
+      }
+    }
+  } catch (error) {
+    console.error("Owner alert bookkeeping failed", orderId, error);
+  }
+
+  // Count a discount code once, now that the payment is confirmed.
+  try {
+    await redeemCoupon(env, orderId);
+  } catch (error) {
+    console.error("Coupon redemption bookkeeping failed", orderId, error);
   }
 
   // A non-2xx response invites Cashfree to retry. Existing sent states prevent duplicate work.

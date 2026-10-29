@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin.html
+Disallow: /admin.js
+Disallow: /api/
+Disallow: /resend.html
+
+Sitemap: https://eboora-store.pages.dev/sitemap.xml

@@ -142,12 +142,12 @@ The privacy page discloses Meta tracking but is a template; update it to reflect
 
 ## 8. Deploy to Cloudflare Pages
 
-You can connect the project folder to a Git repository and choose it as the Cloudflare Pages project, or deploy with Wrangler. Make sure the Pages output directory is the repository root (`.`) for this file layout, and that Cloudflare includes the `functions/` directory in the deployment. Change the project name in `wrangler.toml` or the deploy command to your own project name.
+You can connect the project folder to a Git repository and choose it as the Cloudflare Pages project, or deploy with Wrangler. Set the Pages build output directory to `public` (all website files live there). The `functions/` folder stays at the repository root. Change the project name in `wrangler.toml` or the deploy command to your own project name.
 
 Example Wrangler deployment from this directory:
 
 ```bash
-npx wrangler pages deploy . --project-name YOUR_PAGES_PROJECT
+npx wrangler pages deploy public --project-name YOUR_PAGES_PROJECT
 ```
 
 Add the D1/R2 bindings and variables in the Cloudflare dashboard and redeploy after binding/configuration changes. Use HTTPS and set `SITE_URL` to the final custom domain before testing return URLs and webhooks.

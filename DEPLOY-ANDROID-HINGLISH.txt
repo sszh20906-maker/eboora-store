@@ -43,7 +43,7 @@ If the log says Wrangler is using CLOUDFLARE_API_TOKEN and authentication fails,
    npm run check
 
 7) Deploy the project:
-   npx wrangler pages deploy . --project-name=eboora-store
+   npx wrangler pages deploy public --project-name=eboora-store
 
 IMPORTANT BEFORE SELLING
 - The starter store-config.json intentionally has a blank product name/headline/description and price 0. Fill it with real product details and price before publishing.

@@ -1,20 +1,28 @@
-// GET /api/download?order_id=...&token=...
-// Serves a private R2 object only after the signed link, local order and Cashfree payment all match.
+// GET /api/download?order_id=...&exp=...&token=...
+// Serves a private R2 object only when the signed link is valid, unexpired, and the local order and Cashfree payment match.
 import { json, fetchCashfreeOrder, validOrderId, amountMatches, makeDownloadToken, constantTimeEqual } from "../_lib/commerce.js";
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
   const orderId = url.searchParams.get("order_id");
   const providedToken = url.searchParams.get("token") || "";
-  if (!validOrderId(orderId) || !providedToken) return json({ error: "This download link is incomplete. Please open the link from your purchase email." }, 400);
+  const expiresAt = Number(url.searchParams.get("exp"));
+  if (!validOrderId(orderId) || !providedToken || !Number.isInteger(expiresAt)) {
+    return json({ error: "This download link is incomplete. Please open the link from your purchase email or the thank-you page." }, 400);
+  }
   if (!env.ORDERS_DB || !env.PRODUCTS_BUCKET || !env.PRODUCT_FILE_KEY || !env.DOWNLOAD_TOKEN_SECRET) {
     return json({ error: "Secure download delivery is not configured. Please contact support." }, 503);
   }
 
   let expectedToken;
-  try { expectedToken = await makeDownloadToken(env, orderId); }
+  try { expectedToken = await makeDownloadToken(env, orderId, expiresAt); }
   catch (error) { console.error("Download token configuration error", error); return json({ error: "Secure download delivery is not configured." }, 503); }
-  if (!constantTimeEqual(providedToken, expectedToken)) return json({ error: "This download link is invalid. Please use the original email link." }, 403);
+  if (!constantTimeEqual(providedToken, expectedToken)) {
+    return json({ error: "This download link is invalid. Please use the original link." }, 403);
+  }
+  if (expiresAt < Math.floor(Date.now() / 1000)) {
+    return json({ error: "This download link has expired. Open your purchase confirmation page to get a fresh link." }, 410);
+  }
 
   let record;
   try { record = await env.ORDERS_DB.prepare("SELECT * FROM orders WHERE order_id = ? LIMIT 1").bind(orderId).first(); }
@@ -48,4 +56,3 @@ export async function onRequestGet({ request, env }) {
     return json({ error: "Download is temporarily unavailable. Please try again or contact support." }, 503);
   }
 }
-

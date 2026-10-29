@@ -1,10 +1,16 @@
 // POST /api/create-order
-// Cashfree credentials and the authoritative product price stay on the server.
+// Price, coupon and Cashfree credentials are decided on the server. The browser only sends customer details and an optional code.
 import { json, cashfreeBase, cashfreeMode, hasCashfreeConfig, normalizePhone, safeAmount } from "../_lib/commerce.js";
+import { readStoredConfig } from "../_lib/settings.js";
+import { clientIp, countHit } from "../_lib/ratelimit.js";
+import { quoteCoupon, normalizeCode } from "../_lib/coupons.js";
 
 export async function onRequestPost({ request, env }) {
   if (!hasCashfreeConfig(env)) return json({ error: "Payments are not configured yet. Please contact support." }, 503);
   if (!env.ORDERS_DB) return json({ error: "Order storage is not configured yet. Please contact support." }, 503);
+  if ((await countHit(env, "checkout:" + clientIp(request), 600)) > 30) {
+    return json({ error: "Too many checkout attempts. Please wait a few minutes and try again." }, 429);
+  }
   if (!env.SITE_URL || !env.SITE_URL.startsWith("https://")) return json({ error: "The secure site URL is not configured." }, 503);
 
   // Prevent cross-origin sites from using this endpoint as an order-creation proxy.
@@ -22,15 +28,30 @@ export async function onRequestPost({ request, env }) {
   const customerName = String(input.customer_name || "").trim().replace(/\s+/g, " ").slice(0, 80);
   const customerEmail = String(input.customer_email || "").trim().toLowerCase().slice(0, 160);
   const customerPhone = normalizePhone(input.customer_phone);
-  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
+  const emailOk = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(customerEmail);
   if (customerName.length < 2 || !emailOk || !customerPhone) {
     return json({ error: "Enter a valid name, email address and 10-digit Indian mobile number." }, 400);
   }
+  if ((await countHit(env, "checkout-phone:" + customerPhone, 600)) > 5) {
+    return json({ error: "Too many checkout attempts for this number. Please wait a few minutes and try again." }, 429);
+  }
 
-  const amount = safeAmount(env.PRODUCT_PRICE_INR);
+  const stored = await readStoredConfig(env);
+  const listPrice = safeAmount(stored?.price ?? env.PRODUCT_PRICE_INR);
   const productId = String(env.PRODUCT_ID || "eboora-product").slice(0, 80);
-  const productName = String(env.PRODUCT_NAME || "Digital product").slice(0, 100);
-  if (amount === null) return json({ error: "The product price is not configured correctly." }, 503);
+  const productName = String(stored?.productName || env.PRODUCT_NAME || "Digital product").slice(0, 100);
+  if (listPrice === null) return json({ error: "The product price is not configured correctly." }, 503);
+
+  // Optional discount code, validated on the server.
+  let amount = listPrice;
+  let coupon = null;
+  const couponCode = normalizeCode(input.coupon_code);
+  if (couponCode) {
+    const quote = await quoteCoupon(env, couponCode, listPrice);
+    if (!quote.valid) return json({ error: quote.error }, 400);
+    amount = quote.finalPrice;
+    coupon = quote;
+  }
 
   const orderId = `ck_${Date.now().toString(36)}_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}`;
   const customerId = `c_${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
@@ -90,12 +111,21 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "We could not save your order securely. Please contact support before trying again." }, 503);
   }
 
+  if (coupon) {
+    try {
+      await env.ORDERS_DB.prepare("INSERT INTO order_discounts (order_id, code, original_amount, discount_amount) VALUES (?, ?, ?, ?)")
+        .bind(orderId, coupon.code, listPrice, coupon.discount).run();
+    } catch (error) {
+      console.error("Could not record discount for order", orderId, error);
+    }
+  }
+
   return json({
     order_id: orderId,
     payment_session_id: result.payment_session_id,
     amount,
+    original_amount: listPrice,
     currency: payload.order_currency,
     mode: cashfreeMode(env)
   }, 201);
 }
-

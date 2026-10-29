@@ -53,8 +53,10 @@ async function hmacHex(secret, value) {
   return [...new Uint8Array(signature)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export async function makeDownloadToken(env, orderId) {
-  return hmacHex(env.DOWNLOAD_TOKEN_SECRET, `eboora-store-download:v1:${orderId}`);
+export const DOWNLOAD_TTL_SECONDS = 30 * 24 * 60 * 60;
+
+export async function makeDownloadToken(env, orderId, expiresAt) {
+  return hmacHex(env.DOWNLOAD_TOKEN_SECRET, `eboora-store-download:v2:${orderId}:${expiresAt}`);
 }
 
 export function constantTimeEqual(a, b) {
@@ -67,8 +69,9 @@ export function constantTimeEqual(a, b) {
 export async function makeDownloadUrl(env, orderId) {
   const site = String(env.SITE_URL || "").replace(/\/$/, "");
   if (!site.startsWith("https://")) throw new Error("SITE_URL must be the public HTTPS site URL.");
-  const token = await makeDownloadToken(env, orderId);
-  return `${site}/api/download?order_id=${encodeURIComponent(orderId)}&token=${token}`;
+  const expiresAt = Math.floor(Date.now() / 1000) + DOWNLOAD_TTL_SECONDS;
+  const token = await makeDownloadToken(env, orderId, expiresAt);
+  return `${site}/api/download?order_id=${encodeURIComponent(orderId)}&exp=${expiresAt}&token=${token}`;
 }
 
 export function validOrderId(orderId) {

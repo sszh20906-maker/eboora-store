@@ -1,11 +1,13 @@
 // GET /api/verify-order?order_id=...
 // The customer-facing page never decides payment success from the URL alone.
 import { json, fetchCashfreeOrder, validOrderId, amountMatches, makeDownloadUrl, maskEmail } from "../_lib/commerce.js";
+import { clientIp, countHit } from "../_lib/ratelimit.js";
 
 export async function onRequestGet({ request, env }) {
   if (!env.ORDERS_DB) return json({ paid: false, status: "ORDER_STORAGE_NOT_CONFIGURED" }, 503);
   const orderId = new URL(request.url).searchParams.get("order_id");
   if (!validOrderId(orderId)) return json({ paid: false, status: "INVALID_ORDER_ID" }, 400);
+  if ((await countHit(env, "verify:" + clientIp(request), 600)) > 60) return json({ paid: false, status: "TOO_MANY_REQUESTS" }, 429);
 
   let record;
   try {

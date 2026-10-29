@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Store admin | Eboora-Store</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f4f5fb;color:#17192d;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:900px;margin:auto;padding:20px 14px 60px}
+h1{font-size:1.5rem;margin:0 0 4px}
+h2{font-size:1.1rem;margin:0 0 12px}
+.card{background:#fff;border:1px solid #e2e5f0;border-radius:14px;padding:18px;margin:14px 0}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field.full{grid-column:1/-1}
+label{font-weight:700;font-size:.86rem}
+input,textarea,select{font:inherit;padding:10px 11px;border:1px solid #d4d8e8;border-radius:9px;width:100%;background:#fff}
+textarea{min-height:88px;resize:vertical}
+.help{font-size:.8rem;color:#626780}
+.btn{display:inline-flex;align-items:center;justify-content:center;padding:10px 14px;border:0;border-radius:10px;background:#3548e8;color:#fff;font-weight:700;text-decoration:none;cursor:pointer;font-size:.9rem}
+.btn:disabled{opacity:.6;cursor:wait}
+.btn.light{background:#e9ebff;color:#2433b8}
+.btn.wa{background:#25d366;color:#fff}
+.hidden{display:none!important}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:#f7f8ff;border-radius:12px;padding:12px}
+.stat b{display:block;font-size:1.25rem}
+.order{border:1px solid #e2e5f0;border-radius:12px;padding:12px;margin-top:10px}
+.order-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center}
+.badge{font-size:.75rem;font-weight:700;padding:3px 9px;border-radius:99px}
+.b-paid{background:#e5f7ec;color:#137747}
+.b-open{background:#fff3d6;color:#8a5a00}
+.b-other{background:#eee;color:#444}
+.muted{color:#626780;font-size:.85rem;overflow-wrap:anywhere}
+.msg{font-weight:700;margin:10px 0 0}
+.ok{color:#137747}
+.bad{color:#b42318}
+@media(max-width:650px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Store admin</h1>
+  <p class="muted">Orders aur product settings yahin se manage karo. Save karte hi storefront par changes dikhte hain.</p>
+
+  <section id="loginCard" class="card">
+    <h2>Admin key</h2>
+    <form id="loginForm" class="row">
+      <input id="keyInput" type="password" autocomplete="current-password" placeholder="Admin key" style="max-width:360px">
+      <button class="btn" type="submit">Open</button>
+    </form>
+    <p id="loginMsg" class="msg bad hidden"></p>
+  </section>
+
+  <div id="app" class="hidden">
+    <div class="row" style="justify-content:space-between">
+      <a class="btn light" href="/" target="_blank" rel="noopener">Storefront dekho</a>
+      <button class="btn light" id="logoutBtn" type="button">Logout</button>
+    </div>
+
+    <section class="card">
+      <h2>Orders</h2>
+      <div class="stats">
+        <div class="stat"><span class="muted">Paid</span><b id="paidCount">0</b><span class="muted" id="paidTotal"></span></div>
+        <div class="stat"><span class="muted">Unpaid (checkout tak aaye)</span><b id="openCount">0</b><span class="muted" id="openTotal"></span></div>
+        <div class="stat"><span class="muted">Sab orders</span><b id="allCount">0</b></div>
+        <div class="stat"><span class="muted">Aaj ki sales (paid)</span><b id="todayCount">0</b><span class="muted" id="todayTotal"></span></div>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <select id="statusFilter" style="max-width:240px">
+          <option value="ALL">Sab orders</option>
+          <option value="CREATED">Unpaid (follow-up)</option>
+          <option value="PAID">Paid</option>
+          <option value="FAILED">Failed</option>
+          <option value="CANCELLED">Cancelled</option>
+        </select>
+        <button class="btn light" id="refreshBtn" type="button">Refresh</button>
+      </div>
+      <p class="help">Unpaid order follow-up sirf usi buyer ko bhejo jisne khud details di thi. Message bhejne se pehle Cashfree dashboard mein check kar lo ki payment to nahi ho gayi.</p>
+      <p id="ordersMsg" class="muted"></p>
+      <div id="orderList"></div>
+    </section>
+
+    <section class="card">
+      <h2>Coupons (launch offer / discount codes)</h2>
+      <form id="couponForm" class="grid">
+        <div class="field"><label for="cCode">Code (jaise LAUNCH20)</label><input id="cCode" maxlength="20" required></div>
+        <div class="field"><label for="cType">Type</label><select id="cType"><option value="percent">Percent (%)</option><option value="fixed">Fixed (Rs)</option></select></div>
+        <div class="field"><label for="cValue">Value</label><input id="cValue" type="number" min="1" step="0.01" required></div>
+        <div class="field"><label for="cMax">Max uses (khali = unlimited)</label><input id="cMax" type="number" min="1" step="1"></div>
+        <div class="field"><label for="cExpires">Expires on (khali = no expiry)</label><input id="cExpires" type="date"></div>
+        <div class="field" style="justify-content:flex-end"><button class="btn" type="submit">Save coupon</button></div>
+      </form>
+      <p id="couponMsg" class="msg hidden"></p>
+      <div id="couponList"></div>
+    </section>
+
+    <section class="card">
+      <h2>Product settings</h2>
+      <form id="settingsForm">
+        <div class="grid">
+          <div class="field"><label for="productName">Product name *</label><input id="productName" maxlength="100" required></div>
+          <div class="field"><label for="eyebrow">Chhota label</label><input id="eyebrow" maxlength="40"></div>
+          <div class="field full"><label for="headline">Main headline *</label><input id="headline" maxlength="120" required></div>
+          <div class="field full"><label for="description">Description *</label><textarea id="description" maxlength="2000" required></textarea></div>
+          <div class="field"><label for="price">Selling price (₹) *</label><input id="price" type="number" min="1" step="0.01" required></div>
+          <div class="field"><label for="mrp">Original price (optional)</label><input id="mrp" type="number" min="0" step="0.01"><span class="help">Sirf tabhi bharo jab asli MRP ho.</span></div>
+          <div class="field full"><label for="benefits">Benefits (har line: Title | Description)</label><textarea id="benefits"></textarea></div>
+          <div class="field full"><label for="included">Kya milega (har line mein ek item)</label><textarea id="included"></textarea></div>
+          <div class="field full"><label for="faqs">FAQs (har line: Sawal | Jawab)</label><textarea id="faqs"></textarea></div>
+          <div class="field full"><label for="reviews">Testimonials: sirf genuine customers ke (har line: Naam | Review). Khali chhod sakte ho.</label><textarea id="reviews"></textarea></div>
+          <div class="field full"><label for="coverImage">Cover image (/path ya https link)</label><input id="coverImage"></div>
+          <div class="field"><label for="brand">Store name</label><input id="brand" maxlength="60"></div>
+          <div class="field"><label for="email">Support email *</label><input id="email" type="email" required></div>
+          <div class="field"><label for="makerName">Creator naam</label><input id="makerName" maxlength="80"></div>
+          <div class="field"><label for="whatsapp">WhatsApp number (country code ke saath)</label><input id="whatsapp" inputmode="numeric" placeholder="919876543210"></div>
+          <div class="field full"><label for="makerLine">Creator bio / support line</label><textarea id="makerLine" maxlength="300"></textarea></div>
+          <div class="field"><label for="responseTime">Reply time</label><input id="responseTime" maxlength="60"></div>
+          <div class="field"><label for="legal">Footer legal line (optional)</label><input id="legal" maxlength="200"></div>
+          <div class="field"><label for="pixelId">Meta Pixel ID (optional)</label><input id="pixelId" inputmode="numeric"></div>
+        </div>
+        <div class="row" style="margin-top:14px"><button class="btn" id="saveBtn" type="submit">Save changes</button></div>
+        <p id="saveMsg" class="msg hidden"></p>
+      </form>
+    </section>
+  </div>
+</div>
+<script src="/admin.js" defer></script>
+</body>
+</html>
