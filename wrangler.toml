@@ -1,0 +1,7 @@
+name = "landing-meta-cashfree-storefront"
+compatibility_date = "2026-10-29"
+pages_build_output_dir = "."
+
+# D1 and R2 resources should be created in your Cloudflare account, then bound
+# to the Pages project as ORDERS_DB and PRODUCTS_BUCKET. Keep account-specific
+# database IDs and real secrets out of this template repository.

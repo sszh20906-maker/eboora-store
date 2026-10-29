@@ -1,0 +1,69 @@
+EBOORA-STORE — ANDROID / CLOUDFLARE DEPLOY GUIDE
+
+IMPORTANT
+- Do NOT delete wrangler.toml.
+- Cloudflare's simple drag-and-drop uploader does not support this full project because it includes Pages Functions/backend configuration.
+- This project needs Wrangler deployment, and account-specific database/storage bindings + secrets must be configured before live checkout works.
+- Do not put API keys, passwords, or Cashfree secrets into GitHub or any public file.
+
+ANDROID STEPS (Termux)
+1) Install Termux packages:
+   pkg update -y && pkg install nodejs unzip -y
+
+2) Allow file access:
+   termux-setup-storage
+
+3) Go to Downloads (change ZIP filename if yours differs):
+   cd ~/storage/downloads
+   unzip -o eboora-store-cloudflare-ready.zip -d eboora-deploy
+   cd eboora-deploy/eboora-store-reusable
+
+FIX FOR CLOUDFLARE ERROR 10000 / CLOUDFLARE_API_TOKEN
+If the log says Wrangler is using CLOUDFLARE_API_TOKEN and authentication fails, this is a Cloudflare token/account-scope issue, not a JavaScript build error.
+- Never paste your token into chat or commit it to GitHub.
+- For a local Termux deployment, clear a stale custom token and use browser login:
+   unset CLOUDFLARE_API_TOKEN
+   unset CLOUDFLARE_ACCOUNT_ID
+   npx wrangler logout
+   npx wrangler login
+   npx wrangler whoami
+- Confirm the browser login is for the intended Cloudflare account. Then deploy from this terminal.
+- If deploying in hosted CI/build settings, browser login won't persist there. Create a new Cloudflare API token scoped to the correct account with Cloudflare Pages: Edit permission, then update the CLOUDFLARE_API_TOKEN secret in that build environment. Never reveal the token.
+- If error 10000 remains, verify the token scope/account ID and that the Pages project belongs to that same account. An account role of Super Administrator does not override token permissions.
+
+4) Login to Cloudflare (skip if you completed the fix above):
+   npx wrangler login
+   Follow the browser login flow.
+
+5) Create the Pages project once, if it does not already exist:
+   npx wrangler pages project create eboora-store
+   If it says the project already exists, continue.
+
+6) Run the code checks first:
+   npm run check
+
+7) Deploy the project:
+   npx wrangler pages deploy . --project-name=eboora-store
+
+IMPORTANT BEFORE SELLING
+- The starter store-config.json intentionally has a blank product name/headline/description and price 0. Fill it with real product details and price before publishing.
+- Keep Cloudflare PRODUCT_PRICE_INR equal to the visible store price.
+- Upload the actual paid product ZIP to the private R2 bucket using the exact PRODUCT_FILE_KEY.
+- This is a single-product starter, not a complete multi-product marketplace admin.
+
+AFTER FIRST DEPLOY (Cloudflare Dashboard)
+- Open Workers & Pages > eboora-store > Settings > Variables and Secrets.
+- Configure the environment variables listed in .env.example / CONNECT-SETUP.md as encrypted secrets where appropriate.
+- Create a D1 database and bind it to the Pages project as ORDERS_DB; apply schema.sql to that database.
+- Create an R2 bucket and bind it as PRODUCTS_BUCKET.
+- Add the required variables/secrets for Cashfree, Resend email, and Meta Conversions API only when ready. Never share secret values in chat.
+- Add the final production domain after DNS setup.
+
+BEFORE SELLING
+- Test with Cashfree sandbox first.
+- Verify webhook signature and payment status before delivery.
+- Test successful payment, failed payment, duplicate webhook, email delivery, and secure downloads.
+- Confirm database/storage bindings and secrets are configured. A successful deploy alone does NOT mean checkout is live.
+
+NOTE
+This package is not guaranteed to be fully production-ready until account-specific Cloudflare bindings, secrets, domain, and live service tests are completed. Multi-product admin/database management may need additional development; review README.md and CONNECT-SETUP.md.

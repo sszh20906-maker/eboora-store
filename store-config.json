@@ -1,0 +1,26 @@
+{
+  "brand": "Eboora-Store",
+  "domain": "https://eboora.store",
+  "email": "support@eboora.store",
+  "pixelId": "YOUR_PIXEL_ID",
+  "productId": "eboora-product",
+  "productName": "",
+  "eyebrow": "Digital download",
+  "headline": "",
+  "description": "",
+  "price": 0,
+  "mrp": 0,
+  "currency": "INR",
+  "coverImage": "/assets/cover.svg",
+  "benefits": [],
+  "included": [],
+  "faqs": [],
+  "maker": {
+    "name": "Eboora Creator",
+    "line": "Questions about your purchase? Contact our support team."
+  },
+  "legal": "",
+  "whatsapp": "",
+  "responseTime": "1 business day",
+  "reviews": []
+}

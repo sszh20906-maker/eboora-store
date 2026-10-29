@@ -1,0 +1,8 @@
+{
+  "name": "landing-meta-cashfree-storefront",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "node --check functions/_lib/commerce.js && node --check functions/api/create-order.js && node --check functions/api/verify-order.js && node --check functions/api/download.js && node --check functions/api/cashfree-webhook.js && node tests/commerce.test.mjs && node tests/checkout-flow.test.mjs"
+  }
+}

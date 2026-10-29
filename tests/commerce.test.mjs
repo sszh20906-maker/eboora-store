@@ -1,0 +1,21 @@
+import assert from "node:assert/strict";
+import { normalizePhone, safeAmount, amountMatches, validOrderId, constantTimeEqual, makeDownloadToken } from "../functions/_lib/commerce.js";
+
+assert.equal(normalizePhone("98765 43210"), "9876543210");
+assert.equal(normalizePhone("+91 98765-43210"), "9876543210");
+assert.equal(normalizePhone("123"), "");
+assert.equal(safeAmount("499"), 499);
+assert.equal(safeAmount("0"), null);
+assert.equal(safeAmount("NaN"), null);
+assert.equal(amountMatches(499, 499), true);
+assert.equal(amountMatches(499, 498), false);
+assert.equal(validOrderId("ck_abcd_1234"), true);
+assert.equal(validOrderId("../unknown"), false);
+assert.equal(constantTimeEqual("abcdef", "abcdef"), true);
+assert.equal(constantTimeEqual("abcdef", "abcdeg"), false);
+const env = { DOWNLOAD_TOKEN_SECRET: "local-test-secret-that-is-at-least-32-characters-long" };
+const token = await makeDownloadToken(env, "ck_test_123");
+assert.match(token, /^[a-f0-9]{64}$/);
+assert.equal(await makeDownloadToken(env, "ck_test_123"), token);
+assert.notEqual(await makeDownloadToken(env, "ck_test_456"), token);
+console.log("Commerce helper tests passed.");

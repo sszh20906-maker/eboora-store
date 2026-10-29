@@ -1,0 +1,101 @@
+// POST /api/create-order
+// Cashfree credentials and the authoritative product price stay on the server.
+import { json, cashfreeBase, cashfreeMode, hasCashfreeConfig, normalizePhone, safeAmount } from "../_lib/commerce.js";
+
+export async function onRequestPost({ request, env }) {
+  if (!hasCashfreeConfig(env)) return json({ error: "Payments are not configured yet. Please contact support." }, 503);
+  if (!env.ORDERS_DB) return json({ error: "Order storage is not configured yet. Please contact support." }, 503);
+  if (!env.SITE_URL || !env.SITE_URL.startsWith("https://")) return json({ error: "The secure site URL is not configured." }, 503);
+
+  // Prevent cross-origin sites from using this endpoint as an order-creation proxy.
+  const origin = request.headers.get("Origin");
+  try {
+    if (origin && new URL(origin).origin !== new URL(env.SITE_URL).origin) {
+      return json({ error: "Invalid request origin." }, 403);
+    }
+  } catch { return json({ error: "Invalid site configuration." }, 503); }
+
+  let input;
+  try { input = await request.json(); } catch { return json({ error: "Please enter your checkout details and try again." }, 400); }
+  if (!input || typeof input !== "object") return json({ error: "Please enter your checkout details and try again." }, 400);
+
+  const customerName = String(input.customer_name || "").trim().replace(/\s+/g, " ").slice(0, 80);
+  const customerEmail = String(input.customer_email || "").trim().toLowerCase().slice(0, 160);
+  const customerPhone = normalizePhone(input.customer_phone);
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail);
+  if (customerName.length < 2 || !emailOk || !customerPhone) {
+    return json({ error: "Enter a valid name, email address and 10-digit Indian mobile number." }, 400);
+  }
+
+  const amount = safeAmount(env.PRODUCT_PRICE_INR);
+  const productId = String(env.PRODUCT_ID || "eboora-product").slice(0, 80);
+  const productName = String(env.PRODUCT_NAME || "Digital product").slice(0, 100);
+  if (amount === null) return json({ error: "The product price is not configured correctly." }, 503);
+
+  const orderId = `ck_${Date.now().toString(36)}_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}`;
+  const customerId = `c_${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
+  const siteUrl = String(env.SITE_URL).replace(/\/$/, "");
+  const payload = {
+    order_id: orderId,
+    order_amount: amount,
+    order_currency: env.PRODUCT_CURRENCY || "INR",
+    customer_details: {
+      customer_id: customerId,
+      customer_name: customerName,
+      customer_email: customerEmail,
+      customer_phone: customerPhone
+    },
+    order_meta: {
+      return_url: `${siteUrl}/thank-you.html?order_id={order_id}`,
+      notify_url: `${siteUrl}/api/cashfree-webhook`
+    },
+    order_note: productName,
+    order_tags: { product_id: productId }
+  };
+
+  let cashfreeResponse;
+  try {
+    cashfreeResponse = await fetch(`${cashfreeBase(env)}/orders`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "x-client-id": env.CASHFREE_APP_ID,
+        "x-client-secret": env.CASHFREE_SECRET_KEY,
+        "x-api-version": env.CASHFREE_API_VERSION || "2026-01-01",
+        "x-request-id": crypto.randomUUID()
+      },
+      body: JSON.stringify(payload)
+    });
+  } catch (error) {
+    console.error("Cashfree create-order network error", error);
+    return json({ error: "Cashfree could not be reached. Please try again." }, 502);
+  }
+
+  const result = await cashfreeResponse.json().catch(() => ({}));
+  if (!cashfreeResponse.ok || !result.payment_session_id) {
+    console.error("Cashfree create-order failed", cashfreeResponse.status, result.type || result.code || "unknown_error");
+    return json({ error: "Cashfree could not create the payment session. Please try again in a moment." }, 502);
+  }
+
+  try {
+    await env.ORDERS_DB.prepare(`
+      INSERT INTO orders
+        (order_id, product_id, amount, currency, customer_name, customer_email, customer_phone, status, email_status, meta_status, created_at, updated_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'CREATED', 'PENDING', 'PENDING', datetime('now'), datetime('now'))
+    `).bind(orderId, productId, amount, payload.order_currency, customerName, customerEmail, customerPhone).run();
+  } catch (error) {
+    // Fail closed: do not give a checkout session when the order cannot be tracked locally.
+    console.error("Order database insert failed", error);
+    return json({ error: "We could not save your order securely. Please contact support before trying again." }, 503);
+  }
+
+  return json({
+    order_id: orderId,
+    payment_session_id: result.payment_session_id,
+    amount,
+    currency: payload.order_currency,
+    mode: cashfreeMode(env)
+  }, 201);
+}
+
