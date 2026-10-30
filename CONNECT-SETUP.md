@@ -1,4 +1,4 @@
-# Eboora-Store: what you must connect manually
+# Eboora: what you must connect manually
 
 This project already includes code for Meta Pixel browser events, Meta Conversions API Purchase events, and automatic purchase/download emails. These features stay inactive until the account-specific values and Cloudflare resources are configured.
 
@@ -20,7 +20,7 @@ This project already includes code for Meta Pixel browser events, Meta Conversio
 ### 3) Automatic purchase email
 1. Create a Resend account and verify the sender domain/address you will use.
 2. Set `RESEND_API_KEY` as an encrypted Cloudflare secret.
-3. Set `FROM_EMAIL` to the verified sender (example format: `Eboora-Store <downloads@your-verified-domain>`).
+3. Set `FROM_EMAIL` to the verified sender (example format: `Eboora <downloads@your-verified-domain>`).
 4. Set `REPLY_TO` to a real inbox that you check.
 5. Test a sandbox payment and confirm the email arrives, the download link works, and the email does not land in spam.
 

@@ -20,7 +20,7 @@ async function validCashfreeSignature(rawBody, timestamp, signature, secret) {
 async function sendDownloadEmail(env, record, orderId, downloadUrl) {
   if (!env.RESEND_API_KEY || !env.FROM_EMAIL || !record.customer_email) throw new Error("Resend email configuration or customer email is missing.");
   const product = (await getProductById(env, record.product_id))?.productName || env.PRODUCT_NAME || "your digital product";
-  const brand = env.BRAND_NAME || "Eboora-Store";
+  const brand = env.BRAND_NAME || "Eboora";
   const safeUrl = esc(downloadUrl);
   const html = `<div style="font-family:Arial,sans-serif;max-width:540px;margin:auto;color:#111827;line-height:1.65">
 <h1 style="font-size:24px;line-height:1.2">Your download is ready</h1>

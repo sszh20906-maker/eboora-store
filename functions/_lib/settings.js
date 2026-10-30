@@ -37,7 +37,13 @@ export function validateConfig(input) {
   const whatsapp = digits(input.whatsapp);
   const pixel = digits(input.pixelId);
   const coverRaw = clean(input.coverImage, 300);
-  const coverImage = coverRaw.startsWith("/") || coverRaw.startsWith("https://") ? coverRaw : "/assets/cover.svg";
+  const coverImage = (coverRaw.startsWith("/") && !coverRaw.startsWith("//")) || coverRaw.startsWith("https://") ? coverRaw : "/assets/cover.svg";
+  const galleryImages = (Array.isArray(input.galleryImages) ? input.galleryImages : [])
+    .map((x) => clean(x, 500))
+    .filter((x) => (x.startsWith("/") && !x.startsWith("//")) || x.startsWith("https://"))
+    .slice(0, 8);
+  const previewVideoRaw = clean(input.previewVideoUrl, 500);
+  const previewVideoUrl = previewVideoRaw.startsWith("https://") ? previewVideoRaw : "";
 
   if (!productName) errors.push("Product name zaroori hai.");
   if (!headline) errors.push("Headline zaroori hai.");
@@ -64,7 +70,7 @@ export function validateConfig(input) {
     .filter((r) => r.text).slice(0, 10);
 
   const config = {
-    brand: clean(input.brand, 60) || "Eboora-Store",
+    brand: clean(input.brand, 60) || "Eboora",
     email,
     productName,
     eyebrow: clean(input.eyebrow, 40) || "Digital download",

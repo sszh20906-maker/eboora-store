@@ -1,4 +1,4 @@
-# Eboora-Store digital product storefront — Cloudflare Pages + Cashfree
+# Eboora digital product storefront — Cloudflare Pages + Cashfree
 
 A responsive digital-product landing page with a wide hero cover, mobile purchase bar, Cashfree Hosted Checkout, server-side order verification, private Cloudflare R2 delivery, transactional download emails, and optional Meta Pixel + Conversions API purchase tracking.
 
@@ -17,7 +17,7 @@ A responsive digital-product landing page with a wide hero cover, mobile purchas
 
 This ZIP contains the implementation, but it cannot become a live store until you add your real business information, real product files, domain, Cashfree credentials, Cloudflare bindings, and email-provider credentials. These are account-specific values and cannot be safely guessed. Do not accept live payments until the sandbox checklist near the end passes.
 
-The current product page is still an example for a product called **the configured digital product**. Verify every count, inclusion, Canva/Notion link, licence claim, update promise, response-time promise, and price against the actual digital product you sell. The bundled `assets/cover.svg` is an illustrative cover graphic, not a delivery file or proof that the advertised templates already exist. Add only genuine customer reviews.
+The current product page is a configurable template for a product called **the configured digital product**. Verify every count, inclusion, Canva/Notion link, licence claim, update promise, response-time promise, and price against the actual digital product you sell. The bundled `assets/cover.svg` is an illustrative cover graphic, not a delivery file or proof that the advertised templates already exist. Add only genuine customer reviews.
 
 ## Files
 
@@ -41,15 +41,18 @@ wrangler.toml                      Cloudflare Pages project defaults
 ```
 
 
-## Eboora-Store product editor
+## Eboora product editor
 
-- Store branding defaults to **Eboora-Store** and is shared across product pages/configurations.
-- Open `/admin.html` to edit product title, headline, description, selling price, genuine MRP (optional), cover image, benefits, inclusions, FAQs, support details and the creator/about section.
+- Store branding defaults to **Eboora** and is shared across product pages/configurations.
+- Open `/admin.html` to manage multiple products, product title, headline, description, selling price, genuine MRP (optional), cover image, up to 8 gallery preview images, an optional HTTPS video-demo link, benefits, inclusions, FAQs, support details and the creator/about section. The public product page uses a conversion-focused two-column desktop layout, mobile-first product gallery, price/discount panel, quick benefits, verified Cashfree checkout messaging and sticky mobile purchase bar.
 - Click **Export store-config.json**. Replace the deployed `store-config.json` with the exported file and redeploy the static site. This static build does not silently save to the live site.
 - The creator/about text and store name are editable but can be kept consistent across products.
-- The payment backend in this build supports **one active product per deployment**. Its product ID, price, name, filename and R2 file key must match the corresponding Cloudflare environment variables. The editor cannot change those server-side values for security reasons.
-- If you want multiple products listed and purchasable simultaneously under Eboora-Store, the next step is a real multi-product admin backend (authenticated admin, product table, per-product price/file key and dynamic product routes). Do not treat the current static editor as a full multi-product catalogue.
+- The current build includes an authenticated multi-product admin backend, D1 product records, per-product public pages, product-specific prices and product-file associations. Keep product delivery objects private in R2.
 - Product-specific fields start blank deliberately; no product category or unsupported claims are assumed. Do not publish until real product details and actual deliverables are entered.
+
+## Admin credentials and security
+
+Set `ADMIN_EMAIL` to the Gmail address that should own the store, as a Cloudflare environment variable. Generate a password hash locally with `node scripts/make-admin-password.mjs` and save the resulting hash as the encrypted Cloudflare Secret `ADMIN_PASSWORD_HASH`. The raw password is never stored in the repository or browser. Do not paste credentials into HTML, JavaScript, Git, or this chat. Admin login uses an HttpOnly, Secure session cookie, a D1-backed session record, and login rate limiting.
 
 ## 1. Configure the real product
 
@@ -166,7 +169,7 @@ This checks backend JavaScript syntax, helper validation/token behavior, and a m
 
 Do not switch to production until these all pass:
 
-- [ ] No `Eboora-Store`, `[business address]`, `yourdomain.com`, `YOUR_PIXEL_ID`, placeholder copy, or unused `₹499` values remain unless they are truly correct.
+- [ ] No `Eboora`, `[business address]`, `yourdomain.com`, `YOUR_PIXEL_ID`, placeholder copy, or unused `₹499` values remain unless they are truly correct.
 - [ ] The product page promises only content actually included in the R2 ZIP and any connected Canva/Notion resources.
 - [ ] Privacy, Terms and Refund pages match the real seller, product, support practices and applicable law.
 - [ ] All buy buttons open the customer detail dialog on desktop and mobile.

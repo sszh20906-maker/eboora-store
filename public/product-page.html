@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Eboora-Store | Digital Products</title>
-<meta name="description" content="Discover digital products from Eboora-Store.">
-<meta property="og:title" content="Eboora-Store | Digital Products"><meta property="og:description" content="Digital products, delivered securely.">
+<title>Eboora | Digital Products</title>
+<meta name="description" content="Discover digital products from Eboora.">
+<meta property="og:title" content="Eboora | Digital Products"><meta property="og:description" content="Digital products, delivered securely.">
 <meta name="theme-color" content="#101426"><link rel="icon" type="image/svg+xml" href="/assets/favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
@@ -19,21 +19,54 @@
 .item strong{font-size:.9rem}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#101426;color:#fff;padding:12px 18px;border-radius:12px;z-index:20;font-weight:600;max-width:92%;text-align:center;box-shadow:0 10px 30px #0004}
 @media(min-width:761px){.toast{bottom:28px}}
+
+/* Eboora conversion-focused product page */
+.product-shell{display:grid;grid-template-columns:minmax(0,1.02fr) minmax(0,.98fr);gap:clamp(26px,4vw,54px);align-items:start}
+.product-visual{min-width:0}.cover-wrap{padding:10px;border-radius:24px;box-shadow:0 24px 70px #17255418}.cover{position:relative;aspect-ratio:4/3;border-radius:17px;background:linear-gradient(145deg,#e9edff,#dbeafe);color:#15214b}.cover img{object-fit:cover}.visual-tag,.discount-tag{position:absolute;top:14px;left:14px;padding:7px 11px;border-radius:9px;background:#101426d9;color:#fff;font-size:.7rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;backdrop-filter:blur(8px)}.discount-tag{left:auto;right:14px;background:#e11d48}.product-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:12px}.product-meta .eyebrow{margin:0}.availability{display:inline-flex;align-items:center;gap:7px;color:#137747;background:#e9f9ef;border:1px solid #c8efd7;padding:6px 10px;border-radius:99px;font-size:.72rem;font-weight:800}.availability i{width:7px;height:7px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 3px #16a34a20}.hero-copy{background:#fff;border:1px solid #e5e8f3;border-radius:24px;padding:clamp(22px,3vw,34px);box-shadow:0 20px 60px #1725540c}.hero h1{font-size:clamp(1.9rem,3.6vw,2.85rem);max-width:20ch}.lead{line-height:1.75}.price-panel{padding:17px 18px;border:1px solid #e0e7ff;border-radius:17px;background:linear-gradient(135deg,#f6f8ff,#fff);margin:22px 0 16px}.price-panel .price{font-size:clamp(1.8rem,3vw,2.25rem)}.price-row{margin:0;gap:12px}.hero-actions{display:flex;align-items:center;gap:14px;flex-wrap:wrap}.hero-actions .btn{min-width:190px;min-height:52px;background:linear-gradient(135deg,#3548e8,#2638c8);color:#fff;box-shadow:0 10px 22px #3548e833}.payment-note{font-size:.78rem;color:var(--muted);font-weight:700}.product-safe{font-size:.77rem;color:#596078;background:#f7f8fc;border-radius:12px;padding:11px 13px;margin:16px 0 0;line-height:1.55}.quick-benefits{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:18px 0}.quick-benefit{display:flex;align-items:flex-start;gap:8px;font-size:.82rem;font-weight:700;color:#343951;background:#fafbff;border:1px solid #eceef6;border-radius:11px;padding:10px}.quick-benefit b{color:#16834b}.gallery-strip{display:flex;gap:9px;overflow-x:auto;padding:11px 2px 4px;scrollbar-width:thin}.gallery-thumb{width:74px;height:66px;flex:0 0 auto;border:2px solid #e1e5f0;background:#f7f8fc;border-radius:11px;overflow:hidden;padding:0;cursor:pointer}.gallery-thumb[aria-pressed="true"]{border-color:var(--blue);box-shadow:0 0 0 3px #3548e820}.gallery-thumb img{width:100%;height:100%;object-fit:cover}.preview-link{display:inline-flex;margin:8px 0 0;padding:9px 13px;border-radius:10px;background:#eef2ff;color:#2736c7;text-decoration:none;font-size:.82rem;font-weight:800}.visual-trust{display:flex;gap:8px 14px;flex-wrap:wrap;margin:14px 2px 0;color:#5b637a;font-size:.72rem;font-weight:700}.trust .wrap{padding-top:19px;padding-bottom:19px}.trust-item{padding-left:3px}.section-head h2{letter-spacing:-.045em}.item{box-shadow:0 7px 24px #17255408;transition:transform .18s,box-shadow .18s}.item:hover{transform:translateY(-2px);box-shadow:0 12px 30px #17255412}.offer-box{box-shadow:0 18px 50px #0002}.save-badge{margin-left:0}.top .btn{background:#3548e8;color:#fff}.top .logo-mark{background:#3548e8}
+@media(max-width:760px){.product-shell{grid-template-columns:1fr;gap:18px}.product-visual{order:0}.hero-copy{order:1;padding:21px;border-radius:20px}.hero{padding:24px 0 28px}.cover-wrap{max-width:none}.cover{aspect-ratio:4/3}.quick-benefits{gap:7px}.quick-benefit{font-size:.75rem;padding:9px}.hero-actions .btn{flex:1}.visual-trust{font-size:.66rem;gap:7px 10px}}
+@media(max-width:390px){.quick-benefits{grid-template-columns:1fr}.product-meta{align-items:flex-start}.payment-note{width:100%}}
 </style>
 </head>
 <body>
-<header class="top"><div class="wrap"><a class="logo" href="#top"><span class="logo-mark">E</span><span id="brand">Eboora-Store</span></a><a class="btn buy" href="#offer" id="topBuy">View product</a></div></header>
+<header class="top"><div class="wrap"><a class="logo" href="#top"><span class="logo-mark">E</span><span id="brand">Eboora</span></a><a class="btn buy" href="#offer" id="topBuy">View product</a></div></header>
 <main id="top">
-<section class="hero"><div class="wrap hero-grid"><div class="hero-copy"><span class="eyebrow" id="eyebrow">Coming soon</span><h1 id="headline">No product listed yet</h1><p class="lead" id="description">This store has no product for sale yet. Please check back soon.</p><div class="price-row"><a class="btn buy" href="#offer" id="heroBuy">Get access</a><div class="price"><span id="price">—</span><s id="mrp" class="hidden"></s></div><span id="saveBadge" class="save-badge hidden"></span></div><p class="micro" id="heroMicro">One-time payment · Secure checkout · Access after payment verification</p></div><div class="cover-wrap"><div class="cover" id="cover"><img id="coverImg" src="/assets/cover.svg" alt="Digital product cover"><div class="cover-fallback hidden" id="coverFallback">Your digital product</div></div></div></div></section>
+<section class="hero"><div class="wrap">
+<div class="product-shell">
+  <div class="product-visual">
+    <div class="cover-wrap">
+      <div class="cover" id="cover">
+        <img id="coverImg" src="/assets/cover.svg" alt="Digital product cover">
+        <div class="cover-fallback hidden" id="coverFallback">Your digital product</div>
+        <span class="visual-tag" id="qualityTag">Instant digital access</span>
+        <span class="discount-tag hidden" id="visualDiscount"></span>
+      </div>
+    </div>
+    <div class="gallery-strip hidden" id="galleryStrip" aria-label="Product preview images"></div>
+    <a class="preview-link hidden" id="previewVideo" target="_blank" rel="noopener noreferrer">▶ Watch product preview</a>
+    <div class="visual-trust"><span>✓ Secure checkout</span><span>✓ Instant delivery after verification</span><span>✓ Support available</span></div>
+  </div>
+  <div class="hero-copy">
+    <div class="product-meta"><span class="eyebrow" id="eyebrow">Digital download</span><span class="availability"><i></i> Digital product</span></div>
+    <h1 id="headline">Explore this digital product</h1>
+    <p class="lead" id="description">Product details will appear here once configured by the store owner.</p>
+    <div class="price-panel">
+      <div class="price-row"><div class="price"><span id="price">—</span><s id="mrp" class="hidden"></s></div><span id="saveBadge" class="save-badge hidden"></span></div>
+      <p class="micro" id="heroMicro">One-time payment · Secure Cashfree checkout · Access after payment verification</p>
+    </div>
+    <div class="hero-actions"><a class="btn buy" href="#offer" id="heroBuy">Buy now</a><span class="payment-note">UPI · Cards · Netbanking</span></div>
+    <div class="quick-benefits" id="quickBenefits"></div>
+    <p class="product-safe">🔒 Your payment is processed securely by Cashfree. Your download is released only after payment verification.</p>
+  </div>
+</div></div></section>
 <div class="trust"><div class="wrap"><div class="trust-item">Secure checkout<small>Payments processed by Cashfree</small></div><div class="trust-item">Digital delivery<small>After payment is verified</small></div><div class="trust-item">Customer support<small id="supportTime">Reply within 1 business day</small></div></div></div>
-<section class="section" id="benefitSection"><div class="wrap"><div class="section-head"><h2>Why this product?</h2><p class="muted" id="benefitIntro">See the details and benefits below before purchasing.</p></div><div class="benefits" id="benefits"></div></div></section>
-<section class="section alt" id="includedSection"><div class="wrap"><div class="section-head"><h2>What you'll receive</h2><p class="muted">Review the product contents before you buy.</p></div><div class="included" id="included"></div></div></section>
+<section class="section" id="benefitSection"><div class="wrap"><div class="section-head"><h2>How this product helps</h2><p class="muted" id="benefitIntro">See the details and benefits below before purchasing.</p></div><div class="benefits" id="benefits"></div></div></section>
+<section class="section alt" id="includedSection"><div class="wrap"><div class="section-head"><h2>Exactly what you get</h2><p class="muted">Review the product contents before you buy.</p></div><div class="included" id="included"></div></div></section>
 <section class="section" id="aboutSection"><div class="wrap"><div class="about"><div><div class="avatar" id="avatar">E</div><h3>About the creator</h3><p class="muted" id="makerName">Eboora Creator</p></div><div><p id="makerLine">Questions about your purchase? Contact our support team.</p><p style="margin-top:12px"><a id="supportEmail" href="mailto:support@eboora.store">support@eboora.store</a></p><a id="whatsapp" class="hidden" target="_blank" rel="noopener">Message on WhatsApp</a></div></div></div></section>
 <section class="offer" id="offer"><div class="wrap offer-grid"><div><h2 id="offerTitle">Ready when you are</h2><p id="offerDescription">Review the product details, then continue to secure checkout.</p><p style="font-size:.85rem;margin-top:14px">No subscription unless explicitly stated in the product details.</p></div><div class="offer-box"><strong id="offerProductName">Digital product</strong><div class="price"><s id="offerMrp" class="hidden"></s> <span id="offerPrice">—</span></div><button class="btn blue buy" type="button" id="checkoutButton">Continue to secure checkout</button><small>UPI · Cards · Netbanking (availability depends on Cashfree)</small><small><a href="/refund.html">Read refund policy</a></small></div></div></section>
 <section class="section hidden" id="reviewSection"><div class="wrap"><div class="section-head"><h2>What buyers say</h2><p class="muted">Genuine feedback from customers.</p></div><div class="benefits" id="reviews"></div></div></section>
 <section class="section alt" id="faqSection"><div class="wrap"><div class="section-head"><h2>Frequently asked questions</h2></div><div class="faq" id="faq"></div></div></section>
 </main>
-<footer class="footer"><div class="wrap"><div>© <span id="year"></span> <span id="footerBrand">Eboora-Store</span>. All rights reserved.<br><span id="legal"></span></div><div><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/refund.html">Refund policy</a> · <a href="/resend.html">Lost download link?</a> · <a id="footerEmail" href="mailto:support@eboora.store">Support</a></div></div></footer>
+<footer class="footer"><div class="wrap"><div>© <span id="year"></span> <span id="footerBrand">Eboora</span>. All rights reserved.<br><span id="legal"></span></div><div><a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · <a href="/refund.html">Refund policy</a> · <a href="/resend.html">Lost download link?</a> · <a id="footerEmail" href="mailto:support@eboora.store">Support</a></div></div></footer>
 <div class="sticky" id="stickyBar"><div><strong id="stickyPrice">—</strong><small>one-time payment</small></div><button class="btn blue buy" id="stickyBuy" type="button">Buy now</button></div>
 <dialog id="checkoutDialog" aria-labelledby="checkoutTitle"><div class="checkout-inner"><div class="checkout-head"><div><h2 id="checkoutTitle">Secure checkout</h2><p class="muted" style="font-size:.88rem">Enter your details to create a secure Cashfree checkout.</p></div><button class="close" id="closeCheckout" type="button" aria-label="Close">×</button></div><form class="checkout-form" id="checkoutForm"><label for="customerName">Full name</label><input id="customerName" name="customer_name" autocomplete="name" maxlength="80" required><label for="customerEmail">Email address</label><input id="customerEmail" name="customer_email" type="email" autocomplete="email" maxlength="160" required><label for="customerPhone">Mobile number (India)</label><input id="customerPhone" name="customer_phone" type="tel" autocomplete="tel-national" inputmode="numeric" pattern="[0-9 +()-]{10,18}" minlength="10" maxlength="18" placeholder="10-digit mobile number" required><label for="couponCode">Coupon code (optional)</label>
 <div style="display:flex;gap:8px;align-items:stretch"><input id="couponCode" maxlength="20" autocomplete="off" style="flex:1;min-width:0;text-transform:uppercase"><button class="btn light" id="applyCoupon" type="button" style="width:auto;margin:0;padding:0 16px;border:0;border-radius:10px;background:#e9ebff;color:#2433b8;font-weight:800;cursor:pointer">Apply</button></div>

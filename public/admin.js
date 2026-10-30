@@ -30,6 +30,8 @@ function readForm() {
     price: $('price').value,
     mrp: $('mrp').value,
     coverImage: $('coverImage').value,
+    galleryImages: lines($('galleryImages').value),
+    previewVideoUrl: $('previewVideoUrl').value,
     benefits: lines($('benefits').value).map(l => { const [title, description] = splitPipe(l); return { title, description }; }),
     included: lines($('included').value).map(title => ({ title })),
     faqs: lines($('faqs').value).map(l => { const [question, answer] = splitPipe(l); return { question, answer }; }).filter(f => f.question && f.answer),
@@ -49,7 +51,7 @@ function fillForm(p) {
   storeProductName = p.productName || '';
   $('slug').value = p.slug || '';
   $('status').value = p.status === 'draft' ? 'draft' : 'published';
-  $('brand').value = p.brand || 'Eboora-Store';
+  $('brand').value = p.brand || 'Eboora';
   $('email').value = p.email || '';
   $('productName').value = p.productName || '';
   $('eyebrow').value = p.eyebrow || 'Digital download';
@@ -58,6 +60,8 @@ function fillForm(p) {
   $('price').value = p.price || '';
   $('mrp').value = p.mrp || '';
   $('coverImage').value = p.coverImage || '/assets/cover.svg';
+  $('galleryImages').value = (p.galleryImages || []).join('\n');
+  $('previewVideoUrl').value = p.previewVideoUrl || '';
   $('benefits').value = (p.benefits || []).map(b => b.description ? b.title + ' | ' + b.description : b.title).join('\n');
   $('included').value = (p.included || []).map(x => x.title).join('\n');
   $('faqs').value = (p.faqs || []).map(f => f.question + ' | ' + f.answer).join('\n');
