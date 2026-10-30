@@ -21,3 +21,9 @@
 
 /landing.js
   Cache-Control: no-cache
+
+/p/*
+  Cache-Control: no-cache
+
+/product-page.html
+  Cache-Control: no-cache
