@@ -33,6 +33,7 @@ function readForm() {
     coverImage: $('coverImage').value,
     deliveryUrl: $('deliveryUrl').value.trim(),
     theme: $('theme').value,
+    accentColor: $('useAccent').checked ? $('accentColor').value : '',
     benefits: lines($('benefits').value).map(l => { const [title, description] = splitPipe(l); return { title, description }; }),
     included: lines($('included').value).map(title => ({ title })),
     faqs: lines($('faqs').value).map(l => { const [question, answer] = splitPipe(l); return { question, answer }; }).filter(f => f.question && f.answer),
@@ -62,7 +63,10 @@ function fillForm(p) {
   $('mrp').value = p.mrp || '';
   $('coverImage').value = p.coverImage || '/assets/cover.svg';
   $('deliveryUrl').value = p.deliveryUrl || '';
-  $('theme').value = p.theme || 'navy';
+  $('theme').value = p.theme || 'tech';
+  $('useAccent').checked = Boolean(p.accentColor);
+  $('accentColor').value = /^#[0-9a-fA-F]{6}$/.test(p.accentColor || '') ? p.accentColor : '#2563eb';
+  updateThemePreview();
   $('benefits').value = (p.benefits || []).map(b => b.description ? b.title + ' | ' + b.description : b.title).join('\n');
   $('included').value = (p.included || []).map(x => x.title).join('\n');
   $('faqs').value = (p.faqs || []).map(f => f.question + ' | ' + f.answer).join('\n');
@@ -537,3 +541,14 @@ function drawOverview(d) {
   const y=document.createElementNS(svgNS,'text');y.setAttribute('x',W-pad-36);y.setAttribute('y',H-7);y.setAttribute('class','axis');y.textContent=dates[13].slice(5);svg.append(y);
   $('salesChart').replaceChildren(svg);
 }
+
+// v31 theme selector: updates preview without saving or changing checkout.
+function updateThemePreview() {
+  const preview = $('themePreview');
+  if (!preview) return;
+  preview.dataset.productTheme = $('theme').value;
+  preview.style.setProperty('--product-accent', $('useAccent').checked ? $('accentColor').value : '');
+  $('themePreviewTitle').textContent = $('productName').value || 'Your product';
+}
+['theme','accentColor','useAccent','productName'].forEach(id => $(id)?.addEventListener('input', updateThemePreview));
+updateThemePreview();

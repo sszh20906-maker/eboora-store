@@ -64,6 +64,7 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
 @media(max-width:470px){.product-rows .order{grid-template-columns:56px minmax(0,1fr);column-gap:10px}.product-rows .order>.product-thumb{width:56px;height:72px}.product-rows .order .btn{padding:8px 9px}.product-rows .order .row{gap:6px}.workspace-top{gap:8px}.card{padding:17px}.stats{gap:8px}.stat b{font-size:21px}.stat .muted{font-size:11px}}
 </style>
 <link rel="stylesheet" href="/assets/eboora-premium.css?v=29">
+<link rel="stylesheet" href="/assets/eboora-v31.css?v=31">
 </head>
 <body class="admin-premium">
 <div class="wrap">
@@ -151,7 +152,7 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
           <div class="field full"><label for="included">Kya milega (har line mein ek item)</label><textarea id="included"></textarea></div>
           <div class="field full"><label for="faqs">FAQs (har line: Sawal | Jawab)</label><textarea id="faqs"></textarea></div>
           <div class="field full"><label for="reviews">Testimonials: sirf genuine customers ke (har line: Naam | Review)</label><textarea id="reviews"></textarea></div>
-          <div class="field"><label for="theme">Store theme</label><select id="theme"><option value="navy">Midnight blue · Trust</option><option value="forest">Forest green · Wellness</option><option value="violet">Royal violet · Creative</option><option value="sunset">Sunset amber · Energy</option></select></div>
+          <div class="field"><label for="theme">Store theme</label><select id="theme"><option value="navy">Midnight blue · Trust</option><option value="forest">Forest green · Wellness</option><option value="violet">Royal violet · Creative</option><option value="sunset">Sunset amber · Energy (legacy)</option><option value="aggressive">🔥 Aggressive · Fitness</option><option value="luxury">💎 Luxury · Premium</option><option value="soft">🌸 Soft Minimal · Education</option><option value="tech">⚡ Modern Tech · Digital</option></select><small class="help">Each theme follows customer device light/dark mode.</small></div><div class="field"><label for="accentColor">Custom accent colour (optional)</label><input id="accentColor" type="color" value="#2563eb"><label style="display:inline-flex;gap:8px;align-items:center"><input id="useAccent" type="checkbox"> Use custom colour</label></div><div class="field full"><div class="theme-preview" id="themePreview" aria-live="polite"><span>LIVE THEME PREVIEW</span><strong id="themePreviewTitle">Your product</strong><small id="themePreviewHint">Preview adapts to device appearance</small><button type="button" class="theme-preview-btn">Preview button ↗</button></div></div>
           <div class="field full"><label for="deliveryUrl">Product delivery · Google Drive folder/file sharing URL</label><input id="deliveryUrl" type="url" placeholder="https://drive.google.com/drive/folders/…"><small class="help">Buyers get this link only after Cashfree payment verification. Anyone with link can share it; not DRM.</small></div>
           <div class="field full"><label for="coverImage">Cover image path (upload na ho to ye use hoga)</label><input id="coverImage"></div>
           <div class="field"><label for="brand">Store name</label><input id="brand" maxlength="60"></div>
