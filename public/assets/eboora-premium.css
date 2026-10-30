@@ -11,3 +11,13 @@ body.admin-premium{background:#f5f7fc;color:#152640}.admin-premium .wrap{max-wid
 @media(max-width:600px){.catalog-premium header{padding:13px 15px}.catalog-premium header h1{font-size:23px}.catalog-premium .hero{padding:35px 24px;min-height:385px;border-radius:24px}.catalog-premium .hero h2{font-size:clamp(40px,10vw,58px);letter-spacing:-2px}.catalog-premium .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.catalog-premium .item .body{padding:14px}.catalog-premium .item .name{font-size:15px}.catalog-premium .item .price{font-size:17px}.catalog-premium .item .cta{font-size:12px;padding:10px 6px}.catalog-premium .item img{aspect-ratio:1}.product-premium .hero{padding:28px 0 40px}.product-premium .hero h1{font-size:clamp(32px,8vw,44px)}.product-premium .cover-wrap{transform:none}.product-premium .trust .wrap{gap:12px}.admin-premium .stat{padding:15px}.admin-premium .stat b{font-size:23px}.admin-premium .workspace-heading strong{font-size:24px}}
 @media(max-width:365px){.catalog-premium .grid{grid-template-columns:1fr}.catalog-premium .item img{aspect-ratio:1.5}.admin-premium .nav-btn{font-size:10px}.admin-premium .workspace-top .btn{font-size:11px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* v30: true 16:9 product media, uncropped and responsive */
+.product-premium .cover{aspect-ratio:16 / 9!important;overflow:hidden;background:#f0f4fa!important;}
+.product-premium .cover img{width:100%;height:100%;object-fit:contain!important;object-position:center;}
+.product-premium .cover-wrap{transform:none!important;}
+.product-premium .hero h1{font-size:clamp(29px,3.4vw,48px)!important;line-height:1.16;letter-spacing:-.045em;}
+.product-premium .lead{font-size:15.5px!important;line-height:1.65!important;}
+.product-premium .hero{padding:clamp(25px,4vw,55px) 0!important;}
+.product-premium .eyebrow{font-size:12px!important;}
+@media(max-width:760px){.product-premium .hero h1{font-size:clamp(27px,6.5vw,34px)!important}.product-premium .lead{font-size:15px!important;line-height:1.6!important}.product-premium .cover-wrap{padding:10px!important;border-radius:20px!important}.product-premium .cover{border-radius:13px!important}.product-premium .hero-grid{gap:19px!important}}

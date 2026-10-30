@@ -78,7 +78,7 @@ export async function onRequestPost({ request, env }) {
       const next = { ...product, coverStorage: "d1", coverType: type };
       delete next.coverKey;
       await writeProduct(env, next);
-      if (oldKey && env.PRODUCTS_BUCKET) await env.PRODUCTS_BUCKET.delete(oldKey).catch(() => {});
+      if (oldKey && env.PRODUCTS_BUCKET) await env.PRODUCTS_BUCKET.delete(oldKey).catch((e) => console.error("Old cover cleanup failed", e));
       return json({ ok: true, product: await getProductById(env, product.id) }, 201);
     } catch (error) { console.error("D1 cover upload failed", error); return json({ error: "D1 cover save nahi hua. Try again." }, 503); }
   }
@@ -106,6 +106,10 @@ export async function onRequestPost({ request, env }) {
     return json({ error: "Upload could not be saved. Please try again." }, 503);
   }
   // A replaced file is removed from storage, so nothing stale stays behind.
+  if (kind === "cover") {
+    // An earlier D1 cover must not remain orphaned after switching to R2.
+    await env.ORDERS_DB.prepare("DELETE FROM store_settings WHERE key = ?").bind(`cover_d1_${product.id}`).run().catch((e) => console.error("Old D1 cover cleanup failed", e));
+  }
   if (previousKey && previousKey !== key) await env.PRODUCTS_BUCKET.delete(previousKey).catch((e) => console.error("Old file cleanup failed", e));
   return json({ ok: true, product: await getProductById(env, product.id) }, 201);
 }
@@ -128,7 +132,7 @@ export async function onRequestDelete({ request, env }) {
     delete next.coverKey;
     delete next.coverType;
     delete next.coverStorage;
-    if (product.coverStorage === "d1") await env.ORDERS_DB.prepare("DELETE FROM store_settings WHERE key = ?").bind(`cover_d1_${product.id}`).run();
+    // Cleanup occurs only after the product record has been updated successfully.
   } else {
     delete next.fileKey;
     delete next.fileName;
@@ -140,6 +144,9 @@ export async function onRequestDelete({ request, env }) {
   } catch (error) {
     console.error("Product media removal failed", error);
     return json({ error: "Could not remove. Please try again." }, 503);
+  }
+  if (kind === "cover") {
+    await env.ORDERS_DB.prepare("DELETE FROM store_settings WHERE key = ?").bind(`cover_d1_${product.id}`).run().catch((e) => console.error("D1 cover cleanup failed", e));
   }
   if (key && env.PRODUCTS_BUCKET) await env.PRODUCTS_BUCKET.delete(key).catch((e) => console.error("Storage delete failed", e));
   return json({ ok: true, product: await getProductById(env, product.id) });
