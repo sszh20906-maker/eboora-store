@@ -1,4 +1,10 @@
+import { createHash } from "node:crypto";
+
 // In-memory stand-in for D1 covering only the statements these tests use.
+export const TEST_SESSION_TOKEN = "test-session-token-for-tests-only";
+export const ADMIN_COOKIE = "eboora_admin=" + TEST_SESSION_TOKEN;
+export const TEST_ADMIN_HASH = "pbkdf2$100000$c2FsdHNhbHRzYWx0$aGFzaGhhc2hoYXNo";
+const TEST_SESSION_HASH = createHash("sha256").update(TEST_SESSION_TOKEN).digest("hex");
 export function makeDb() {
   const settings = new Map();
   const orders = new Map();
@@ -7,6 +13,8 @@ export function makeDb() {
   const coupons = new Map();
   const orderDiscounts = new Map();
   const refunds = [];
+  const sessions = new Map();
+  sessions.set(TEST_SESSION_HASH, { expires_at: Math.floor(Date.now() / 1000) + 3600 });
 
   const allRows = (sql, args) => {
     if (sql.includes("GROUP BY status")) {
@@ -71,11 +79,20 @@ export function makeDb() {
       return 1;
     }
     if (sql.includes("DELETE FROM order_notifications")) { notifications.delete(args[0] + ":owner_sale"); return 1; }
+    if (sql.includes("INSERT INTO admin_sessions")) { sessions.set(args[0], { expires_at: args[1] }); return 1; }
+    if (sql.includes("DELETE FROM admin_sessions")) {
+      if (sql.includes("expires_at <")) {
+        let n = 0;
+        for (const [k, v] of sessions) if (v.expires_at < args[0]) { sessions.delete(k); n++; }
+        return n;
+      }
+      return sessions.delete(args[0]) ? 1 : 0;
+    }
     return 0;
   };
 
   return {
-    settings, orders, rateLimits, notifications, coupons, orderDiscounts, refunds,
+    settings, orders, rateLimits, notifications, coupons, orderDiscounts, refunds, sessions,
     prepare(sql) {
       return {
         bind(...args) {
@@ -92,6 +109,7 @@ export function makeDb() {
                 const cur = rateLimits.get(args[0]);
                 return cur ? { count: cur.count, window_start: cur.window_start } : null;
               }
+              if (sql.includes("FROM admin_sessions")) { const s = sessions.get(args[0]); return s ? { expires_at: s.expires_at } : null; }
               if (sql.includes("FROM store_settings")) {
                 const v = settings.get(args[0]);
                 return v === undefined ? null : { value: v };

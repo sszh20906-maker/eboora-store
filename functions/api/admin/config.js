@@ -1,4 +1,4 @@
-// GET / PUT /api/admin/config - owner reads and saves product settings (protected by ADMIN_KEY).
+// GET / PUT /api/admin/config - owner reads and saves product settings (owner login required).
 import { json } from "../../_lib/commerce.js";
 import { requireAdmin } from "../../_lib/admin.js";
 import { readStoredConfig, writeStoredConfig, validateConfig } from "../../_lib/settings.js";

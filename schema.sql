@@ -66,3 +66,9 @@ CREATE TABLE IF NOT EXISTS refunds (
   created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 CREATE INDEX IF NOT EXISTS idx_refunds_order ON refunds(order_id);
+
+-- Owner login sessions (token stored only as a hash). Safe to run more than once.
+CREATE TABLE IF NOT EXISTS admin_sessions (
+  token_hash TEXT PRIMARY KEY,
+  expires_at INTEGER NOT NULL
+);

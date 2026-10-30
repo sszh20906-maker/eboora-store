@@ -1,13 +1,14 @@
 import assert from "node:assert/strict";
-import { makeDb } from "./helpers/mockdb.mjs";
+import { makeDb, ADMIN_COOKIE, TEST_ADMIN_HASH } from "./helpers/mockdb.mjs";
+import { onRequestPost as login } from "../functions/api/admin/login.js";
+import { makePasswordHash } from "../functions/_lib/auth.js";
 import { onRequestGet as adminOrders } from "../functions/api/admin/orders.js";
 import { onRequestPost as createOrder } from "../functions/api/create-order.js";
 import { onRequestGet as downloadFile } from "../functions/api/download.js";
 import { makeDownloadUrl, makeDownloadToken } from "../functions/_lib/commerce.js";
 
-const ADMIN_KEY = "security-test-admin-key-0123456789abcdef0123";
 const baseEnv = (db, extra = {}) => ({
-  ORDERS_DB: db, ADMIN_KEY, PRODUCT_ID: "eboora-product", PRODUCT_PRICE_INR: "499", PRODUCT_NAME: "Kit",
+  ORDERS_DB: db, ADMIN_EMAIL: "owner@example.test", ADMIN_PASSWORD_HASH: TEST_ADMIN_HASH, PRODUCT_ID: "eboora-product", PRODUCT_PRICE_INR: "499", PRODUCT_NAME: "Kit",
   PRODUCT_CURRENCY: "INR", CASHFREE_ENV: "sandbox", CASHFREE_APP_ID: "app", CASHFREE_SECRET_KEY: "secret",
   CASHFREE_API_VERSION: "2026-01-01", SITE_URL: "https://shop.example.test",
   DOWNLOAD_TOKEN_SECRET: "security-test-download-secret-at-least-32-chars",
@@ -25,19 +26,18 @@ const fakeCashfree = (order) => async (url, opts = {}) => {
   throw new Error("Unexpected fetch " + url);
 };
 
-// 1. Brute force on the admin key is blocked per IP, other IPs are unaffected
+// 1. Login brute force: 10 wrong passwords per IP, then even the right one is refused for 15 minutes
 {
-  const env = baseEnv(makeDb());
-  const url = "https://shop.example.test/api/admin/orders";
-  for (let i = 0; i < 10; i++) {
-    const r = await adminOrders({ request: new Request(url, { headers: withIp("203.0.113.7", { Authorization: "Bearer wrong-key-attempt" }) }), env });
-    assert.equal(r.status, 401);
-  }
-  const locked = await adminOrders({ request: new Request(url, { headers: withIp("203.0.113.7", { Authorization: "Bearer " + ADMIN_KEY }) }), env });
-  assert.equal(locked.status, 429);
-  const other = await adminOrders({ request: new Request(url, { headers: withIp("198.51.100.9", { Authorization: "Bearer " + ADMIN_KEY }) }), env });
-  assert.equal(other.status, 200);
-  console.log("Admin brute-force lockout test passed.");
+  const db = makeDb();
+  const env = baseEnv(db, { ADMIN_PASSWORD_HASH: await makePasswordHash("the-real-password-123") });
+  const attempt = (password, ip) => login({
+    request: new Request("https://shop.example.test/api/admin/login", { method: "POST", headers: withIp(ip, { "Content-Type": "application/json" }), body: JSON.stringify({ email: "owner@example.test", password }) }),
+    env
+  });
+  for (let i = 0; i < 10; i++) assert.equal((await attempt("wrong-" + i, "203.0.113.7")).status, 401);
+  assert.equal((await attempt("the-real-password-123", "203.0.113.7")).status, 429);
+  assert.equal((await attempt("the-real-password-123", "198.51.100.9")).status, 200);
+  console.log("Login brute-force lockout test passed.");
 }
 
 // 2. Checkout limits: 30 orders per 10 minutes per IP (shared networks are fine), 5 per phone number

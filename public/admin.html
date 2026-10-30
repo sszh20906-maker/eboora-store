@@ -47,10 +47,11 @@ textarea{min-height:88px;resize:vertical}
   <p class="muted">Orders aur product settings yahin se manage karo. Save karte hi storefront par changes dikhte hain.</p>
 
   <section id="loginCard" class="card">
-    <h2>Admin key</h2>
-    <form id="loginForm" class="row">
-      <input id="keyInput" type="password" autocomplete="current-password" placeholder="Admin key" style="max-width:360px">
-      <button class="btn" type="submit">Open</button>
+    <h2>Owner login</h2>
+    <form id="loginForm" class="grid">
+      <div class="field"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required></div>
+      <div class="field"><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required></div>
+      <div class="field full"><button class="btn" type="submit">Login</button></div>
     </form>
     <p id="loginMsg" class="msg bad hidden"></p>
   </section>

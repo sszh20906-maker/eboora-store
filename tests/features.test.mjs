@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
-import { makeDb } from "./helpers/mockdb.mjs";
+import { makeDb, ADMIN_COOKIE, TEST_ADMIN_HASH } from "./helpers/mockdb.mjs";
 import { discountFor, quoteCoupon, redeemCoupon } from "../functions/_lib/coupons.js";
 import { onRequestPost as createOrder } from "../functions/api/create-order.js";
 import { onRequestGet as couponCheck } from "../functions/api/coupon.js";
@@ -9,17 +9,16 @@ import { onRequestPost as recordRefund } from "../functions/api/admin/refunds.js
 import { onRequestGet as listCoupons, onRequestPost as saveCoupon } from "../functions/api/admin/coupons.js";
 import { onRequestPost as webhook } from "../functions/api/cashfree-webhook.js";
 
-const ADMIN_KEY = "features-test-admin-key-0123456789abcdef0123456";
 const WH = "features-test-webhook-secret-0123456789";
 const makeEnv = (db, extra = {}) => ({
-  ORDERS_DB: db, ADMIN_KEY, CASHFREE_ENV: "sandbox", CASHFREE_APP_ID: "app", CASHFREE_SECRET_KEY: "secret",
+  ORDERS_DB: db, ADMIN_EMAIL: "owner@example.test", ADMIN_PASSWORD_HASH: TEST_ADMIN_HASH, CASHFREE_ENV: "sandbox", CASHFREE_APP_ID: "app", CASHFREE_SECRET_KEY: "secret",
   CASHFREE_WEBHOOK_SECRET: WH, CASHFREE_API_VERSION: "2026-01-01", SITE_URL: "https://shop.example.test",
   PRODUCT_PRICE_INR: "499", PRODUCT_NAME: "Kit", PRODUCT_ID: "eboora-product", PRODUCT_CURRENCY: "INR",
   DOWNLOAD_TOKEN_SECRET: "features-test-download-secret-at-least-32-chars", RESEND_API_KEY: "re_test",
   FROM_EMAIL: "Shop <d@example.test>", OWNER_EMAIL: "owner@example.test", ...extra
 });
 const adminReq = (path, method = "GET", body) => new Request("https://shop.example.test" + path, {
-  method, headers: { Authorization: "Bearer " + ADMIN_KEY, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined
+  method, headers: { Cookie: ADMIN_COOKIE, "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined
 });
 const ip = (value) => ({ "CF-Connecting-IP": value });
 
@@ -158,7 +157,7 @@ try {
     db.orders.set("ck_refund_0001", { order_id: "ck_refund_0001", product_id: "eboora-product", amount: 499, currency: "INR", customer_name: "Asha", customer_email: "asha@example.test", customer_phone: "9876543210", status: "PAID", email_status: "SENT", created_at: "2026-10-29 10:00:00", paid_at: "2026-10-29 10:01:00" });
     db.orders.set("ck_unpaid_0001", { order_id: "ck_unpaid_0001", product_id: "eboora-product", amount: 499, currency: "INR", customer_name: "Ravi", customer_email: "ravi@example.test", customer_phone: "9123456789", status: "CREATED", email_status: "PENDING", created_at: "2026-10-29 10:00:00", paid_at: null });
     const env = makeEnv(db);
-    const post = (body, auth = true) => recordRefund({ request: new Request("https://shop.example.test/api/admin/refunds", { method: "POST", headers: auth ? { Authorization: "Bearer " + ADMIN_KEY, "Content-Type": "application/json" } : { "Content-Type": "application/json" }, body: JSON.stringify(body) }), env });
+    const post = (body, auth = true) => recordRefund({ request: new Request("https://shop.example.test/api/admin/refunds", { method: "POST", headers: auth ? { Cookie: ADMIN_COOKIE, "Content-Type": "application/json" } : { "Content-Type": "application/json" }, body: JSON.stringify(body) }), env });
     assert.equal((await post({ order_id: "ck_refund_0001", amount: 100 }, false)).status, 401);
     assert.equal((await post({ order_id: "ck_unpaid_0001", amount: 100 })).status, 400);
     assert.equal((await post({ order_id: "ck_refund_0001", amount: 600 })).status, 400);

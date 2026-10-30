@@ -5,29 +5,26 @@ import { onRequestGet as adminOrders } from "../functions/api/admin/orders.js";
 import { onRequestPost as createOrder } from "../functions/api/create-order.js";
 import { requireAdmin } from "../functions/_lib/admin.js";
 import { validateConfig } from "../functions/_lib/settings.js";
-import { makeDb } from "./helpers/mockdb.mjs";
+import { makeDb, ADMIN_COOKIE, TEST_ADMIN_HASH } from "./helpers/mockdb.mjs";
 
-const ADMIN_KEY = "test-admin-key-with-more-than-32-characters-0001";
 const makeEnv = (db, extra = {}) => ({
-  ORDERS_DB: db, ADMIN_KEY, PRODUCT_ID: "eboora-product", PRODUCT_PRICE_INR: "499", PRODUCT_NAME: "Env Name",
+  ORDERS_DB: db, ADMIN_EMAIL: "owner@example.test", ADMIN_PASSWORD_HASH: TEST_ADMIN_HASH, PRODUCT_ID: "eboora-product", PRODUCT_PRICE_INR: "499", PRODUCT_NAME: "Env Name",
   PRODUCT_CURRENCY: "INR", CASHFREE_ENV: "sandbox", CASHFREE_APP_ID: "app", CASHFREE_SECRET_KEY: "secret",
   CASHFREE_API_VERSION: "2026-01-01", SITE_URL: "https://shop.example.test", ...extra
 });
 const adminRequest = (path, method = "GET", body) => new Request("https://shop.example.test" + path, {
-  method, headers: { Authorization: "Bearer " + ADMIN_KEY, "Content-Type": "application/json" },
+  method, headers: { Cookie: ADMIN_COOKIE, "Content-Type": "application/json" },
   body: body ? JSON.stringify(body) : undefined
 });
 
-// 1. Admin key guard
+// 1. Owner guard: login required, misconfiguration reported clearly
 {
   const db = makeDb();
-  const unconfigured = await requireAdmin(new Request("https://x/api/admin/config"), { ...makeEnv(db), ADMIN_KEY: "" });
-  assert.equal(unconfigured.status, 503);
-  const wrong = await requireAdmin(new Request("https://x/api/admin/config", { headers: { Authorization: "Bearer nope" } }), makeEnv(db));
-  assert.equal(wrong.status, 401);
-  const ok = await requireAdmin(new Request("https://x/api/admin/config", { headers: { Authorization: "Bearer " + ADMIN_KEY } }), makeEnv(db));
-  assert.equal(ok, null);
-  console.log("Admin key guard tests passed.");
+  const notSetUp = await requireAdmin(new Request("https://x/api/admin/config"), { ...makeEnv(db), ADMIN_PASSWORD_HASH: "" });
+  assert.equal(notSetUp.status, 503);
+  assert.equal((await requireAdmin(new Request("https://x/api/admin/config"), makeEnv(db))).status, 401);
+  assert.equal(await requireAdmin(new Request("https://x/api/admin/config", { headers: { Cookie: ADMIN_COOKIE } }), makeEnv(db)), null);
+  console.log("Owner login guard tests passed.");
 }
 
 // 2. Server-side validation of settings

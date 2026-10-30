@@ -1,7 +1,5 @@
 const $ = id => document.getElementById(id);
-const KEY_NAME = 'eboora-admin-key';
 const STATUS_LABEL = { PAID: 'Paid', CREATED: 'Unpaid', FAILED: 'Failed', CANCELLED: 'Cancelled' };
-let adminKey = sessionStorage.getItem(KEY_NAME) || '';
 let storeProductName = '';
 
 const money = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
@@ -10,7 +8,7 @@ const splitPipe = line => { const i = line.indexOf('|'); return i < 0 ? [line.tr
 const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls) n.className = cls; if (text !== undefined) n.textContent = text; return n; };
 
 async function api(path, options = {}) {
-  const r = await fetch(path, { ...options, cache: 'no-store', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + adminKey } });
+  const r = await fetch(path, { ...options, cache: 'no-store', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
   const d = await r.json().catch(() => ({}));
   if (!r.ok) { const err = new Error(d.error || ('Kuch galat hua (' + r.status + ')')); err.status = r.status; throw err; }
   return d;
@@ -77,6 +75,11 @@ function showLoginError(text) {
   m.classList.remove('hidden');
 }
 
+function showLoginCard() {
+  $('loginCard').classList.remove('hidden');
+  $('app').classList.add('hidden');
+}
+
 async function openAdmin() {
   try {
     const d = await api('/api/admin/config');
@@ -86,13 +89,8 @@ async function openAdmin() {
     loadOrders();
     loadCoupons();
   } catch (err) {
-    if (err.status === 401) {
-      adminKey = '';
-      sessionStorage.removeItem(KEY_NAME);
-      showLoginError('Admin key galat hai.');
-    } else {
-      showLoginError(err.message);
-    }
+    showLoginCard();
+    if (err.status && err.status !== 401) showLoginError(err.message);
   }
 }
 
@@ -192,18 +190,34 @@ async function loadOrders() {
   }
 }
 
-$('loginForm').addEventListener('submit', e => {
+$('loginForm').addEventListener('submit', async e => {
   e.preventDefault();
   $('loginMsg').classList.add('hidden');
-  adminKey = $('keyInput').value.trim();
-  if (!adminKey) return;
-  sessionStorage.setItem(KEY_NAME, adminKey);
-  openAdmin();
+  try {
+    const r = await fetch('/api/admin/login', {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: $('loginEmail').value.trim(), password: $('loginPassword').value })
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) { showLoginError(d.error || 'Login nahi hua.'); return; }
+    $('loginPassword').value = '';
+    openAdmin();
+  } catch (err) {
+    showLoginError('Network error. Please try again.');
+  }
 });
 
 $('statusFilter').addEventListener('change', loadOrders);
 $('refreshBtn').addEventListener('click', loadOrders);
-$('logoutBtn').addEventListener('click', () => { sessionStorage.removeItem(KEY_NAME); location.reload(); });
+$('logoutBtn').addEventListener('click', async () => {
+  try {
+    await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' });
+  } finally {
+    location.reload();
+  }
+});
 
 $('settingsForm').addEventListener('submit', async e => {
   e.preventDefault();
@@ -220,7 +234,7 @@ $('settingsForm').addEventListener('submit', async e => {
   }
 });
 
-if (adminKey) openAdmin();
+openAdmin();
 
 // ----- Coupons -----
 function setCouponMsg(text, cls) {

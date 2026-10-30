@@ -16,7 +16,7 @@ for (const f of LEGAL) {
 }
 
 console.log("\nBefore go-live, also confirm (these cannot be checked from code):");
-console.log("  - Cloudflare: ADMIN_KEY, CASHFREE_*, RESEND_API_KEY, DOWNLOAD_TOKEN_SECRET set; CASHFREE_ENV=production only after live approval");
+console.log("  - Cloudflare: ADMIN_EMAIL, ADMIN_PASSWORD_HASH, CASHFREE_*, RESEND_API_KEY, DOWNLOAD_TOKEN_SECRET set; CASHFREE_ENV=production only after live approval");
 console.log("  - Cloudflare: Build output directory = public; D1 (ORDERS_DB) and R2 (PRODUCTS_BUCKET) bound");
 console.log("  - Cashfree: live merchant account approved; webhook URL = https://YOUR-SITE/api/cashfree-webhook with BOTH success and failed events enabled");
 console.log("  - Cloudflare: OWNER_EMAIL set (where new-sale alerts go); schema.sql run again so order_notifications and rate_limits exist");
