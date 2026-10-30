@@ -124,7 +124,7 @@ try {
     const { db, env } = seeded();
     db.orders.set("ck_meta_0001", { order_id: "ck_meta_0001", product_id: PID, amount: 499, currency: "INR", customer_name: "Asha", customer_email: "asha@example.test", customer_phone: "9876543210", status: "CREATED", email_status: "PENDING", meta_status: "PENDING", created_at: "2026-10-29 10:00:00", paid_at: null });
     env.META_CAPI_TOKEN = "meta-test-token";
-    const raw = JSON.stringify({ type: "PAYMENT_SUCCESS_WEBHOOK", data: { order: { order_id: "ck_meta_0001", order_amount: 499, order_currency: "INR" }, payment: { payment_status: "SUCCESS", payment_amount: 499, payment_currency: "INR" }, customer_details: { customer_email: "asha@example.test", customer_phone: "9876543210" } } });
+    const raw = JSON.stringify({ type: "PAYMENT_SUCCESS_WEBHOOK", data: { order: { order_id: "ck_meta_0001", order_amount: 499, order_currency: "INR" }, payment: { payment_status: "SUCCESS", cf_payment_id: "pay_meta_0001", payment_amount: 499, payment_currency: "INR" }, customer_details: { customer_email: "asha@example.test", customer_phone: "9876543210" } } });
     const ts = String(Date.now());
     const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(WH), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
     const sig = btoa(String.fromCharCode(...new Uint8Array(await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(ts + raw)))));

@@ -105,7 +105,7 @@ try {
     assert.equal(db.orderDiscounts.get(data.order_id).code, "LAUNCH10");
     assert.equal(db.coupons.get("LAUNCH10").used_count, 0, "not counted before payment");
 
-    const paid = { type: "PAYMENT_SUCCESS_WEBHOOK", data: { order: { order_id: data.order_id, order_amount: 449.1, order_currency: "INR" }, payment: { payment_status: "SUCCESS", payment_amount: 449.1, payment_currency: "INR" }, customer_details: { customer_email: "asha@example.test", customer_phone: "9876543210" } } };
+    const paid = { type: "PAYMENT_SUCCESS_WEBHOOK", data: { order: { order_id: data.order_id, order_amount: 449.1, order_currency: "INR" }, payment: { payment_status: "SUCCESS", cf_payment_id: "pay_features_01", payment_amount: 449.1, payment_currency: "INR" }, customer_details: { customer_email: "asha@example.test", customer_phone: "9876543210" } } };
     assert.equal((await sendWebhook(env, paid)).status, 200);
     assert.equal((await sendWebhook(env, paid)).status, 200);
     assert.equal(db.coupons.get("LAUNCH10").used_count, 1, "counted once, even with a duplicate webhook");

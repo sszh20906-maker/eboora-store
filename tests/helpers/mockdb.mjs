@@ -10,6 +10,7 @@ export function makeDb() {
   const orders = new Map();
   const rateLimits = new Map();
   const notifications = new Set();
+  const paymentReceipts = new Map();
   const coupons = new Map();
   const orderDiscounts = new Map();
   const refunds = [];
@@ -47,6 +48,10 @@ export function makeDb() {
 
   // Returns the number of changed rows, like D1's meta.changes.
   const runSql = (sql, args) => {
+    if (sql.includes("INSERT OR IGNORE INTO payment_receipts")) {
+      if (paymentReceipts.has(args[0])) return 0;
+      paymentReceipts.set(args[0], args[1]); return 1;
+    }
     if (sql.includes("INSERT INTO store_settings")) { settings.set(args[0], args[1]); return 1; }
     if (sql.includes("INSERT INTO orders")) {
       const [order_id, product_id, amount, currency, customer_name, customer_email, customer_phone] = args;
@@ -114,7 +119,7 @@ export function makeDb() {
 
   return {
     flags,
-    settings, orders, rateLimits, notifications, coupons, orderDiscounts, refunds, sessions, products,
+    settings, orders, paymentReceipts, rateLimits, notifications, coupons, orderDiscounts, refunds, sessions, products,
     prepare(sql) {
       if (flags.productsMissing && sql.includes("products")) return failing;
       return {
@@ -128,6 +133,7 @@ export function makeDb() {
                 rateLimits.set(key, { window_start: windowStart, count });
                 return { count };
               }
+              if (sql.includes("FROM payment_receipts")) return paymentReceipts.has(args[0]) ? { order_id: paymentReceipts.get(args[0]) } : null;
               if (sql.includes("FROM rate_limits")) {
                 const cur = rateLimits.get(args[0]);
                 return cur ? { count: cur.count, window_start: cur.window_start } : null;

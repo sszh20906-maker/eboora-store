@@ -114,34 +114,41 @@ async function sendMetaPurchase(env, record, orderId, amount, currency, customer
   return "SENT";
 }
 
-// A failed payment attempt. Only an unpaid order can become FAILED, so a late failure event never downgrades a paid order.
-async function markFailed(env, body) {
+// Timestamp is signed by Cashfree. Accept milliseconds or seconds and allow retries
+// for up to 24 hours; payment-id deduplication also protects against replay.
+function freshWebhookTimestamp(value, now = Date.now()) {
+  if (!/^\d{10,13}$/.test(String(value || ""))) return false;
+  const number = Number(value);
+  const ms = String(value).length === 10 ? number * 1000 : number;
+  return Number.isFinite(ms) && ms <= now + 5 * 60_000 && ms >= now - 24 * 60 * 60_000;
+}
+
+// A failed *attempt* must not mark the whole order FAILED: a customer can
+// retry with a different payment attempt and still pay successfully.
+async function acknowledgeFailedAttempt(env, body) {
   const orderId = String(body.data?.order?.order_id || "");
   if (!/^[A-Za-z0-9_-]{3,80}$/.test(orderId)) return new Response("missing order id", { status: 400 });
   if (!env.ORDERS_DB) return new Response("order storage unavailable", { status: 503 });
-  try {
-    await env.ORDERS_DB.prepare("UPDATE orders SET status = 'FAILED', updated_at = datetime('now') WHERE order_id = ? AND status = 'CREATED'").bind(orderId).run();
-    return new Response("ok", { status: 200 });
-  } catch (error) {
-    console.error("Could not mark order failed", orderId, error);
-    return new Response("database update failed", { status: 503 });
-  }
+  return new Response("ok", { status: 200 });
 }
 
 export async function onRequestPost({ request, env }) {
   const rawBody = await request.text();
+  if (rawBody.length > 256_000) return new Response("payload too large", { status: 413 });
+  const webhookTimestamp = request.headers.get("x-webhook-timestamp");
   const valid = await validCashfreeSignature(
     rawBody,
-    request.headers.get("x-webhook-timestamp"),
+    webhookTimestamp,
     request.headers.get("x-webhook-signature"),
     (env.CASHFREE_WEBHOOK_SECRET || env.CASHFREE_SECRET_KEY)
   );
   if (!valid) return new Response("bad signature", { status: 401, headers: { "Cache-Control": "no-store" } });
+  if (!freshWebhookTimestamp(webhookTimestamp)) return new Response("stale timestamp", { status: 401 });
 
   let body;
   try { body = JSON.parse(rawBody); }
   catch { return new Response("bad json", { status: 400 }); }
-  if (body.type === "PAYMENT_FAILED_WEBHOOK") return markFailed(env, body);
+  if (body.type === "PAYMENT_FAILED_WEBHOOK") return acknowledgeFailedAttempt(env, body);
   if (body.type !== "PAYMENT_SUCCESS_WEBHOOK") return new Response("ignored", { status: 200 });
   if (!env.ORDERS_DB) {
     console.error("Webhook received but ORDERS_DB is not configured");
@@ -165,11 +172,34 @@ export async function onRequestPost({ request, env }) {
     return new Response("unknown order", { status: 200 });
   }
 
+  const paymentId = String(payment.cf_payment_id ?? "").trim();
+  if (!/^[A-Za-z0-9_-]{1,100}$/.test(paymentId)) return new Response("missing payment id", { status: 400 });
+
   const paidAmount = payment.payment_amount ?? cashfreeOrder.order_amount;
   const currency = payment.payment_currency || cashfreeOrder.order_currency || "INR";
   if (!amountMatches(paidAmount, record.amount) || currency !== record.currency) {
     console.error("Webhook payment amount/currency mismatch", orderId);
     return new Response("amount mismatch", { status: 400 });
+  }
+
+  // A Cashfree payment ID must never be applied to two different orders.
+  // Requires migration v32-payment-security.sql before deploying this code.
+  try {
+    const claim = await env.ORDERS_DB.prepare(
+      "INSERT OR IGNORE INTO payment_receipts (cf_payment_id, order_id) VALUES (?, ?)"
+    ).bind(paymentId, orderId).run();
+    if (claim?.meta?.changes !== 1) {
+      const prior = await env.ORDERS_DB.prepare(
+        "SELECT order_id FROM payment_receipts WHERE cf_payment_id = ?"
+      ).bind(paymentId).first();
+      if (!prior || prior.order_id !== orderId) {
+        console.error("Payment ID reused for a different order", orderId);
+        return new Response("payment conflict", { status: 409 });
+      }
+    }
+  } catch (error) {
+    console.error("Payment receipt storage unavailable", error);
+    return new Response("payment storage unavailable", { status: 503 });
   }
 
   try {

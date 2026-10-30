@@ -13,9 +13,9 @@ const makeEnv = (db) => ({
   PRODUCT_NAME: "Kit", PRODUCT_ID: "eboora-product"
 });
 
-async function send(env, payload, overrideSignature) {
+async function send(env, payload, overrideSignature, timestampOverride) {
   const raw = JSON.stringify(payload);
-  const timestamp = String(Date.now());
+  const timestamp = String(timestampOverride ?? Date.now());
   const key = await crypto.subtle.importKey("raw", new TextEncoder().encode(WH_SECRET), { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
   const mac = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(timestamp + raw));
   const signature = overrideSignature ?? btoa(String.fromCharCode(...new Uint8Array(mac)));
@@ -23,7 +23,7 @@ async function send(env, payload, overrideSignature) {
 }
 
 const failedEvent = (orderId) => ({ type: "PAYMENT_FAILED_WEBHOOK", data: { order: { order_id: orderId, order_amount: 499, order_currency: "INR" }, payment: { payment_status: "FAILED" } } });
-const paidEvent = (orderId) => ({ type: "PAYMENT_SUCCESS_WEBHOOK", data: { order: { order_id: orderId, order_amount: 499, order_currency: "INR" }, payment: { payment_status: "SUCCESS", payment_amount: 499, payment_currency: "INR" }, customer_details: { customer_email: "asha@example.test", customer_phone: "9876543210" } } });
+const paidEvent = (orderId) => ({ type: "PAYMENT_SUCCESS_WEBHOOK", data: { order: { order_id: orderId, order_amount: 499, order_currency: "INR" }, payment: { payment_status: "SUCCESS", cf_payment_id: "pay_" + orderId, payment_amount: 499, payment_currency: "INR" }, customer_details: { customer_email: "asha@example.test", customer_phone: "9876543210" } } });
 
 const seedOrder = (db, orderId) => db.orders.set(orderId, { order_id: orderId, product_id: "eboora-product", amount: 499, currency: "INR", customer_name: "Asha Buyer", customer_email: "asha@example.test", customer_phone: "9876543210", status: "CREATED", email_status: "PENDING", meta_status: "PENDING", created_at: "2026-10-29 10:00:00", paid_at: null });
 
@@ -46,7 +46,7 @@ try {
   {
     const db = makeDb(); seedOrder(db, ID); const env = makeEnv(db);
     assert.equal((await send(env, failedEvent(ID))).status, 200);
-    assert.equal(db.orders.get(ID).status, "FAILED");
+    assert.equal(db.orders.get(ID).status, "CREATED");
     assert.equal(sent.length, 0, "a failed payment must not send any email");
     console.log("Failed payment is recorded test passed.");
   }
@@ -83,6 +83,26 @@ try {
     assert.equal(sent.filter((m) => m.to === "owner@example.test").length, 1);
     assert.equal(sent.filter((m) => m.to === "asha@example.test").length, 1, "buyer email must not be duplicated on retry");
     console.log("Owner alert retry test passed.");
+  }
+
+  // An old, correctly signed webhook is still rejected (replay window).
+  {
+    const db = makeDb(); seedOrder(db, ID); const env = makeEnv(db);
+    const old = Date.now() - 25 * 60 * 60 * 1000;
+    assert.equal((await send(env, paidEvent(ID), undefined, old)).status, 401);
+    assert.equal(db.orders.get(ID).status, "CREATED");
+    console.log("Stale signed webhook rejected test passed.");
+  }
+
+  // One Cashfree payment ID cannot settle two different local orders.
+  {
+    const db = makeDb(); seedOrder(db, ID); seedOrder(db, ID2); const env = makeEnv(db);
+    assert.equal((await send(env, paidEvent(ID))).status, 200);
+    const reused = paidEvent(ID2);
+    reused.data.payment.cf_payment_id = "pay_" + ID;
+    assert.equal((await send(env, reused)).status, 409);
+    assert.equal(db.orders.get(ID2).status, "CREATED");
+    console.log("Cross-order payment ID reuse rejected test passed.");
   }
 
   // Forged signature is rejected

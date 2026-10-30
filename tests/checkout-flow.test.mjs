@@ -5,11 +5,16 @@ import { onRequestGet as downloadFile } from '../functions/api/download.js';
 import { onRequestPost as webhook } from '../functions/api/cashfree-webhook.js';
 
 const rows = new Map();
+const paymentReceipts = new Map();
 const db = {
   prepare(sql) {
     return { bind(...args) {
       return {
         async run() {
+          if (sql.includes('INSERT OR IGNORE INTO payment_receipts')) {
+            if (paymentReceipts.has(args[0])) return { meta: { changes: 0 } };
+            paymentReceipts.set(args[0], args[1]); return { meta: { changes: 1 } };
+          }
           if (sql.includes('INSERT INTO orders')) {
             const [order_id, product_id, amount, currency, customer_name, customer_email, customer_phone] = args;
             rows.set(order_id, {order_id, product_id, amount, currency, customer_name, customer_email, customer_phone, status:'CREATED', email_status:'PENDING', meta_status:'PENDING'});
@@ -24,7 +29,7 @@ const db = {
           }
           return {success:true};
         },
-        async first() { const row=rows.get(args[0]); return row ? {...row} : null; }
+        async first() { if (sql.includes('FROM payment_receipts')) return paymentReceipts.has(args[0]) ? { order_id: paymentReceipts.get(args[0]) } : null; const row=rows.get(args[0]); return row ? {...row} : null; }
       };
     }};
   }
@@ -51,7 +56,7 @@ try {
   const data = await created.json();
   assert.equal(data.payment_session_id,'session_test');
   assert.equal(data.amount,499);
-  const raw = JSON.stringify({type:'PAYMENT_SUCCESS_WEBHOOK',data:{order:{order_id:data.order_id,order_amount:499,order_currency:'INR'},payment:{payment_status:'SUCCESS',payment_amount:499,payment_currency:'INR'},customer_details:{customer_email:'sameer@example.test',customer_phone:'9876543210'}}});
+  const raw = JSON.stringify({type:'PAYMENT_SUCCESS_WEBHOOK',data:{order:{order_id:data.order_id,order_amount:499,order_currency:'INR'},payment:{payment_status:'SUCCESS',cf_payment_id:'pay_checkout_01',payment_amount:499,payment_currency:'INR'},customer_details:{customer_email:'sameer@example.test',customer_phone:'9876543210'}}});
   const timestamp=String(Date.now());
   const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(env.CASHFREE_WEBHOOK_SECRET),{name:'HMAC',hash:'SHA-256'},false,['sign']);
   const mac=await crypto.subtle.sign('HMAC',key,new TextEncoder().encode(timestamp+raw));
