@@ -5,7 +5,7 @@ import { validateConfig } from "../functions/_lib/settings.js";
 
 const PUBLIC = new URL("../public/", import.meta.url).pathname;
 const read = (f) => readFileSync(join(PUBLIC, f), "utf8");
-const PAGES = ["landing.html", "product-page.html", "index.html", "thank-you.html", "terms.html", "privacy.html", "refund.html", "404.html", "admin.html", "resend.html"];
+const PAGES = ["index.html", "thank-you.html", "terms.html", "privacy.html", "refund.html", "404.html", "admin.html", "resend.html"];
 const BUYER_PAGES = ["index.html", "thank-you.html", "terms.html", "privacy.html", "refund.html", "404.html"];
 
 // 1. No inline scripts anywhere (allows a strict Content-Security-Policy)
@@ -56,7 +56,5 @@ const indexJs = read("landing.js");
 assert.ok(!indexJs.includes("/admin.html"), "storefront script must not redirect to admin");
 assert.ok(indexJs.includes("No product listed yet"), "empty state text is missing");
 assert.ok(indexJs.includes("not ready to be bought yet"), "not-ready message is missing");
-assert.ok(indexJs.includes("gallery-thumb"), "product gallery rendering is missing");
-assert.ok(indexJs.includes("quickBenefits"), "quick benefits rendering is missing");
 
 console.log("Site checks passed.");

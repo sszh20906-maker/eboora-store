@@ -32,7 +32,8 @@ export async function onRequestGet({ request, env }) {
     sql += " ORDER BY created_at DESC LIMIT 200";
     const listResult = await env.ORDERS_DB.prepare(sql).bind(...binds).all();
 
-    return json({ summary, today, orders: listResult.results || [] });
+    const chart = await env.ORDERS_DB.prepare("SELECT date(COALESCE(paid_at, updated_at)) AS day, COALESCE(SUM(amount), 0) AS total FROM orders WHERE status = 'PAID' AND date(COALESCE(paid_at, updated_at)) >= date('now', '-13 days') GROUP BY day ORDER BY day").all();
+    return json({ summary, today, revenueByDay: chart.results || [], orders: listResult.results || [] });
   } catch (error) {
     console.error("Admin orders query failed", error);
     return json({ error: "Orders could not be loaded. Please try again." }, 503);

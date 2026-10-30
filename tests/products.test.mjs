@@ -93,3 +93,22 @@ const good = (extra = {}) => ({ productName: "Creator Kit", headline: "Fast resu
 }
 
 console.log("All product tests passed.");
+
+// 6. Drive fulfillment URL must stay private in public catalog and detail API.
+{
+  const db = makeDb(); const env = envFor(db);
+  const drive = "https://drive.google.com/drive/folders/1AbCdEfGhIJKLmNoP";
+  const saved = await saveAdmin({ request: req("/api/admin/products", "POST", good({ slug: "drive-kit", deliveryUrl: drive, theme: "forest" })), env });
+  assert.equal(saved.status, 201);
+  const admin = await saved.json();
+  assert.equal(admin.product.deliveryUrl, drive);
+  assert.equal(admin.product.theme, "forest");
+  const detail = await (await productDetail({ params: { slug: "drive-kit" }, env })).json();
+  assert.equal(detail.deliveryUrl, undefined, "public visitors must never see unpurchased links");
+  assert.equal(detail.theme, "forest");
+  const cards = await (await catalog({ env })).json();
+  assert.equal(JSON.stringify(cards).includes(drive), false, "catalog cannot disclose delivery links");
+  const bad = await saveAdmin({ request: req("/api/admin/products", "POST", good({ slug: "bad-kit", deliveryUrl: "https://evil.example/file" })), env });
+  assert.equal(bad.status, 400);
+  console.log("Google Drive delivery privacy, URL restrictions and themes test passed.");
+}

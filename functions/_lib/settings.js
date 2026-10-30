@@ -23,6 +23,17 @@ export async function writeStoredConfig(env, config) {
 const clean = (value, max) => String(value ?? "").trim().slice(0, max);
 const digits = (value) => String(value ?? "").replace(/\D/g, "");
 
+export function validateDriveUrl(raw) {
+  const value = String(raw || "").trim();
+  if (!value) return "";
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:" || url.username || url.password || url.port || url.hostname !== "drive.google.com") return "";
+    if (!(/^\/file\/d\/[a-zA-Z0-9_-]+\/?/.test(url.pathname) || url.pathname === "/open" || url.pathname === "/drive/folders" || /^\/drive\/folders\/[a-zA-Z0-9_-]+/.test(url.pathname))) return "";
+    return url.toString().slice(0, 500);
+  } catch { return ""; }
+}
+
 export function validateConfig(input) {
   const errors = [];
   if (!input || typeof input !== "object" || Array.isArray(input)) return { errors: ["Invalid data."], config: null };
@@ -37,14 +48,9 @@ export function validateConfig(input) {
   const whatsapp = digits(input.whatsapp);
   const pixel = digits(input.pixelId);
   const coverRaw = clean(input.coverImage, 300);
-  const coverImage = (coverRaw.startsWith("/") && !coverRaw.startsWith("//")) || coverRaw.startsWith("https://") ? coverRaw : "/assets/cover.svg";
-  const galleryImages = (Array.isArray(input.galleryImages) ? input.galleryImages : [])
-    .map((x) => clean(x, 500))
-    .filter((x) => (x.startsWith("/") && !x.startsWith("//")) || x.startsWith("https://"))
-    .slice(0, 8);
-  const previewVideoRaw = clean(input.previewVideoUrl, 500);
-  const previewVideoUrl = previewVideoRaw.startsWith("https://") ? previewVideoRaw : "";
+  const coverImage = coverRaw.startsWith("/") || coverRaw.startsWith("https://") ? coverRaw : "/assets/cover.svg";
 
+  if (input.deliveryUrl && !validateDriveUrl(input.deliveryUrl)) errors.push("Sirf valid Google Drive sharing link use karo.");
   if (!productName) errors.push("Product name zaroori hai.");
   if (!headline) errors.push("Headline zaroori hai.");
   if (!description) errors.push("Description zaroori hai.");
@@ -70,7 +76,7 @@ export function validateConfig(input) {
     .filter((r) => r.text).slice(0, 10);
 
   const config = {
-    brand: clean(input.brand, 60) || "Eboora",
+    brand: clean(input.brand, 60) || "Eboora-Store",
     email,
     productName,
     eyebrow: clean(input.eyebrow, 40) || "Digital download",
@@ -80,6 +86,8 @@ export function validateConfig(input) {
     mrp: mrp || 0,
     currency: "INR",
     coverImage,
+    deliveryUrl: validateDriveUrl(input.deliveryUrl),
+    theme: ["navy", "forest", "violet", "sunset"].includes(input.theme) ? input.theme : "navy",
     benefits,
     included,
     faqs,

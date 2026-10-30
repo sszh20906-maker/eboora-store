@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const admin=readFileSync(new URL('../public/admin.js',import.meta.url),'utf8');
+const landing=readFileSync(new URL('../public/landing.js',import.meta.url),'utf8');
+const catalog=readFileSync(new URL('../public/catalog.js',import.meta.url),'utf8');
+assert.match(admin,/FileReader/);
+assert.match(admin,/localStorage\.setItem\('eboora-preview-config'/);
+assert.match(landing,/localStorage\.getItem\('eboora-preview-config'/);
+assert.match(catalog,/img\.addEventListener\('error'/);
+console.log('Preview and image fallback regression checks passed.');

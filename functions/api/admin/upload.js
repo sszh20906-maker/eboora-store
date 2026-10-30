@@ -3,6 +3,7 @@
 import { json } from "../../_lib/commerce.js";
 import { requireAdmin } from "../../_lib/admin.js";
 import { getProductById, writeProduct } from "../../_lib/products.js";
+import { writeSetting } from "../../_lib/settings.js";
 
 const MB = 1024 * 1024;
 const RULES = {
@@ -42,12 +43,13 @@ const cleanName = (name) => String(name || "download").replace(/[^A-Za-z0-9 ._-]
 export async function onRequestPost({ request, env }) {
   const denied = await requireAdmin(request, env, { binary: true });
   if (denied) return denied;
-  if (!env.PRODUCTS_BUCKET) return json({ error: "File storage is not connected yet (R2 bucket PRODUCTS_BUCKET)." }, 503);
+  // Covers can be stored in D1 when R2 is unavailable; large product files still need R2 or Drive.
 
   const url = new URL(request.url);
   const kind = url.searchParams.get("kind");
   const rule = RULES[kind];
   if (!rule) return json({ error: "Upload type must be cover or file." }, 400);
+  if (kind === "file" && !env.PRODUCTS_BUCKET) return json({ error: "Product files ke liye Google Drive link use karo (R2 connected nahi hai)." }, 503);
   const product = await getProductById(env, url.searchParams.get("id") || "");
   if (!product) return json({ error: "Product not found. Pehle product save karo." }, 404);
 
@@ -57,9 +59,29 @@ export async function onRequestPost({ request, env }) {
     return json({ error: kind === "cover" ? "Cover JPG, PNG ya WebP honi chahiye." : "Is file type ki ijaazat nahi hai. PDF, ZIP, EPUB, MP4, MP3, DOCX, XLSX, JPG ya PNG upload karo." }, 415);
   }
   if (!request.body) return json({ error: "Empty upload." }, 400);
-  const bytes = await readLimited(request.body, rule.max);
+  const bytes = await readLimited(request.body, kind === "cover" && !env.PRODUCTS_BUCKET ? 350 * 1024 : rule.max);
   if (!bytes) return json({ error: `File bahut badi hai. Maximum ${rule.max / MB} MB.` }, 413);
   if (!bytes.byteLength) return json({ error: "Empty file." }, 400);
+
+  if (kind === "cover" && !env.PRODUCTS_BUCKET) {
+    // D1's store_settings table stores a small base64 cover; no new binding or credit card needed.
+    // Validate signatures rather than trusting the browser-provided MIME header.
+    const valid = type === "image/png" ? bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71
+      : type === "image/jpeg" ? bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255
+      : type === "image/webp" ? String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP" : false;
+    if (!valid) return json({ error: "Image file invalid hai." }, 415);
+    let binary = "";
+    for (let i = 0; i < bytes.length; i += 8192) binary += String.fromCharCode(...bytes.subarray(i, i + 8192));
+    const oldKey = product.coverKey;
+    try {
+      await writeSetting(env, `cover_d1_${product.id}`, { type, base64: btoa(binary) });
+      const next = { ...product, coverStorage: "d1", coverType: type };
+      delete next.coverKey;
+      await writeProduct(env, next);
+      if (oldKey && env.PRODUCTS_BUCKET) await env.PRODUCTS_BUCKET.delete(oldKey).catch(() => {});
+      return json({ ok: true, product: await getProductById(env, product.id) }, 201);
+    } catch (error) { console.error("D1 cover upload failed", error); return json({ error: "D1 cover save nahi hua. Try again." }, 503); }
+  }
 
   const original = cleanName(decodeURIComponent(request.headers.get("X-File-Name") || "download"));
   const base = original.replace(/\.[^.]+$/, "") || "download";
@@ -74,7 +96,7 @@ export async function onRequestPost({ request, env }) {
 
   const previousKey = kind === "cover" ? product.coverKey : product.fileKey;
   const updates = kind === "cover"
-    ? { coverKey: key, coverType: type }
+    ? { coverKey: key, coverType: type, coverStorage: "r2" }
     : { fileKey: key, fileName: `${base}.${ext}`, fileSize: bytes.byteLength, fileType: type };
   try {
     await writeProduct(env, { ...product, ...updates });
@@ -91,11 +113,12 @@ export async function onRequestPost({ request, env }) {
 export async function onRequestDelete({ request, env }) {
   const denied = await requireAdmin(request, env);
   if (denied) return denied;
-  if (!env.PRODUCTS_BUCKET) return json({ error: "File storage is not connected yet (R2 bucket PRODUCTS_BUCKET)." }, 503);
+  // D1 covers can be removed without an R2 binding.
 
   const url = new URL(request.url);
   const kind = url.searchParams.get("kind");
   if (kind !== "cover" && kind !== "file") return json({ error: "Upload type must be cover or file." }, 400);
+  if (kind === "file" && !env.PRODUCTS_BUCKET) return json({ error: "R2 file storage unavailable." }, 503);
   const product = await getProductById(env, url.searchParams.get("id") || "");
   if (!product) return json({ error: "Product not found." }, 404);
 
@@ -104,6 +127,8 @@ export async function onRequestDelete({ request, env }) {
   if (kind === "cover") {
     delete next.coverKey;
     delete next.coverType;
+    delete next.coverStorage;
+    if (product.coverStorage === "d1") await env.ORDERS_DB.prepare("DELETE FROM store_settings WHERE key = ?").bind(`cover_d1_${product.id}`).run();
   } else {
     delete next.fileKey;
     delete next.fileName;
@@ -116,6 +141,6 @@ export async function onRequestDelete({ request, env }) {
     console.error("Product media removal failed", error);
     return json({ error: "Could not remove. Please try again." }, 503);
   }
-  if (key) await env.PRODUCTS_BUCKET.delete(key).catch((e) => console.error("Storage delete failed", e));
+  if (key && env.PRODUCTS_BUCKET) await env.PRODUCTS_BUCKET.delete(key).catch((e) => console.error("Storage delete failed", e));
   return json({ ok: true, product: await getProductById(env, product.id) });
 }

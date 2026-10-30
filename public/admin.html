@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Store admin | Eboora</title>
+<title>Store admin | Eboora-Store</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#f4f5fb;color:#17192d;font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -39,9 +39,33 @@ textarea{min-height:88px;resize:vertical}
 .ok{color:#137747}
 .bad{color:#b42318}
 @media(max-width:650px){.grid{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}}
+
+:root{--ink:#101e36;--blue:#155ee8;--line:#e3eaf4;--bg:#f4f7fb}
+body{background:linear-gradient(145deg,#edf4ff,#f7faff 45%,#f2f6fa)}
+.wrap{max-width:1440px;padding:18px clamp(12px,3vw,34px) 60px}
+.wrap>h1,.wrap>p{display:none}
+.admin-shell{display:grid;grid-template-columns:240px minmax(0,1fr);gap:24px;align-items:start}
+.sidebar{background:#0c1c35;color:white;border-radius:23px;padding:24px 14px;min-height:75vh;position:sticky;top:16px;box-shadow:0 22px 50px #0c1c351f}
+.mark-logo{background:white}.mark-logo img{width:39px;height:39px;object-fit:contain}.side-brand{display:flex;align-items:center;gap:12px;padding:5px 12px 28px}.side-brand strong{font-size:25px;letter-spacing:-1.3px}.side-brand small{display:block;color:#92a8ca;font-size:11px;letter-spacing:.7px}.mark{display:grid;place-items:center;background:#287cfd;border-radius:13px;width:45px;height:45px;font-size:36px;font-weight:900;font-style:italic}
+.nav{display:grid;gap:7px}.nav-btn{font:inherit;color:#bbcae1;background:none;border:none;border-radius:12px;text-align:left;padding:13px 15px;font-weight:700;cursor:pointer}.nav-btn.active,.nav-btn:hover{background:#1f3d68;color:#fff}.side-foot{font-size:12px;color:#7595ba;padding:26px 12px}
+.workspace{min-width:0}.workspace>.row{margin-bottom:16px}.card{border-radius:22px;border:1px solid #e3eaf4;box-shadow:0 12px 32px #1023410a;padding:clamp(18px,3vw,28px);margin:0 0 18px}.card h2{letter-spacing:-.65px;font-size:23px}.stat{padding:20px;border:1px solid #e2eaf7;border-radius:17px;background:linear-gradient(145deg,#f8fbff,#eaf3ff)}.stat b{font-size:clamp(19px,3vw,29px);letter-spacing:-1px}.section-kicker,.chart-label{font-size:11px;font-weight:800;letter-spacing:1.5px;color:#3267c7}
+.chart-shell{margin-top:22px;border:1px solid #e3eaf4;border-radius:18px;padding:18px;background:#fcfdff}.sales-chart svg{display:block;width:100%;height:auto;max-height:260px}.sales-chart .axis{font-size:11px;fill:#6680a2}.editor-top{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap}
+.btn{background:#1764e8;border-radius:12px;padding:12px 18px;box-shadow:0 5px 12px #1664e819}.btn.light{background:#e9f1ff;color:#1855b3;box-shadow:none}.order{border-radius:16px;padding:16px;border-color:#e1e9f5}.order:hover{border-color:#a7c6ff}
+@media(max-width:820px){.admin-shell{display:block}.sidebar{position:static;min-height:0;padding:12px;margin-bottom:16px;border-radius:18px}.side-brand{padding:4px 8px 8px}.side-brand strong{font-size:20px}.nav{display:flex;overflow-x:auto;gap:4px}.nav-btn{white-space:nowrap;padding:11px}.side-foot{display:none}}
+@media(max-width:470px){.stats{grid-template-columns:1fr 1fr}.stat{padding:13px}.card{padding:16px}.btn{padding:11px 13px}.row{gap:7px}}
+
+/* EBOORA STUDIO · V26 visual system */
+:root{--blue:#215bdf;--ink:#14223b;--line:#e4eaf3;--bg:#f3f6fc}
+body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif}
+.wrap{padding-top:25px}.admin-shell{grid-template-columns:250px minmax(0,1fr);gap:26px}.sidebar{background:linear-gradient(180deg,#0a1427,#122745);border:1px solid #284066;border-radius:20px;box-shadow:0 20px 45px #15274425}.side-brand{border-bottom:1px solid #ffffff15;margin-bottom:24px}.nav-btn{font-size:14px;transition:background .18s}.nav-btn.active{background:#2473fb;box-shadow:0 7px 18px #0a55e54d}.workspace-top{min-height:66px}.workspace-heading{display:grid;gap:2px;margin-right:auto}.workspace-heading small{color:#7589a6;letter-spacing:1.5px;font-weight:800;font-size:10px}.workspace-heading strong{font-size:clamp(20px,3vw,28px);line-height:1.1;letter-spacing:-.8px}
+.card{box-shadow:0 8px 28px #263c6410;background:#fff;border:1px solid #e3eaf4}.card h2{font-size:23px}.stat{background:#fff;border:1px solid #e4ebf4;box-shadow:0 5px 14px #192e4808}.stat b{color:#0c2550}.stats{gap:13px}.chart-shell{background:linear-gradient(180deg,#fbfdff,#f3f8ff)}.order{box-shadow:0 4px 12px #10254509}.btn{background:#2463e9;box-shadow:none;font-weight:750}.btn:hover{filter:brightness(.96)}input:focus,textarea:focus,select:focus{outline:3px solid #2d6bfa25;border-color:#5585fa}.upload-info{font-size:11px;color:#49638c;letter-spacing:.45px;font-weight:850;padding:12px 14px;border-radius:12px;background:#f0f5ff;margin-bottom:10px}
+.product-rows .order{display:grid;grid-template-columns:75px minmax(0,1fr);column-gap:17px;align-items:center;padding:15px}.product-rows .order>.product-thumb{grid-row:1/4;width:75px;height:88px;object-fit:cover;border-radius:12px;background:#e8eef9}.product-rows .order>.row{grid-column:2;margin-top:8px!important}.product-rows .order .order-head{grid-column:2}.product-rows .order>.muted{grid-column:2}.product-rows .btn{padding:8px 12px;font-size:12px}.product-rows .order-head strong{font-size:16px}.product-rows .order>.muted{font-size:12px}.product-rows .order .btn.delete-btn{background:#fff0f0;color:#ad2934}
+@media(max-width:820px){.sidebar{position:sticky;top:0;z-index:8;border-radius:0;margin:-25px -12px 20px;padding:12px 14px;box-shadow:0 8px 24px #12274527}.side-brand{border:0;margin:0;padding:0 0 8px}.nav{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;overflow:visible}.nav-btn{text-align:center;padding:11px 4px;font-size:12px}.workspace-heading small{font-size:9px}.workspace-top>.btn{font-size:12px}.admin-shell{display:block}.wrap{padding-top:25px}}
+@media(max-width:470px){.product-rows .order{grid-template-columns:56px minmax(0,1fr);column-gap:10px}.product-rows .order>.product-thumb{width:56px;height:72px}.product-rows .order .btn{padding:8px 9px}.product-rows .order .row{gap:6px}.workspace-top{gap:8px}.card{padding:17px}.stats{gap:8px}.stat b{font-size:21px}.stat .muted{font-size:11px}}
 </style>
+<link rel="stylesheet" href="/assets/eboora-premium.css?v=29">
 </head>
-<body>
+<body class="admin-premium">
 <div class="wrap">
   <h1>Store admin</h1>
   <p class="muted">Orders aur product settings yahin se manage karo. Save karte hi storefront par changes dikhte hain.</p>
@@ -57,12 +81,17 @@ textarea{min-height:88px;resize:vertical}
   </section>
 
   <div id="app" class="hidden">
-    <div class="row" style="justify-content:space-between">
-      <a class="btn light" href="/" target="_blank" rel="noopener">Storefront dekho</a>
+    <div class="admin-shell"><aside class="sidebar"><div class="side-brand"><span class="mark mark-logo"><img src="/assets/brand-emblem.png" alt="" width="39" height="39"></span><div><strong>eboora</strong><small>Creator commerce</small></div></div><nav class="nav">
+    <button class="nav-btn active" type="button" data-tab="overview">◫ &nbsp; Overview</button><button class="nav-btn" type="button" data-tab="orders">▤ &nbsp; Orders</button><button class="nav-btn" type="button" data-tab="products">▦ &nbsp; Products</button><button class="nav-btn" type="button" data-tab="coupons">◇ &nbsp; Coupons</button></nav><div class="side-foot">Store controls · Secure workspace</div></aside><main class="workspace">
+    <div class="row workspace-top" style="justify-content:space-between">
+      <div class="workspace-heading"><small>OWNER WORKSPACE / EBOORA</small><strong id="workspaceTitle">Overview</strong></div><a class="btn light" href="/" target="_blank" rel="noopener">Storefront dekho</a>
       <button class="btn light" id="logoutBtn" type="button">Logout</button>
     </div>
 
-    <section class="card">
+    <section class="card" data-panel="overview"><div class="section-kicker">PERFORMANCE</div><h2>Store overview</h2><p class="muted">Live order totals from your Cloudflare D1 database</p>
+      <div class="stats" id="overviewStats"></div>
+      <div class="chart-shell"><div class="chart-label">Last 14 days · Paid orders (INR)</div><div id="salesChart" class="sales-chart"></div></div></section>
+    <section class="card hidden" data-panel="orders"><div class="section-kicker">COMMERCE</div>
       <h2>Orders</h2>
       <div class="stats">
         <div class="stat"><span class="muted">Paid</span><b id="paidCount">0</b><span class="muted" id="paidTotal"></span></div>
@@ -85,7 +114,7 @@ textarea{min-height:88px;resize:vertical}
       <div id="orderList"></div>
     </section>
 
-    <section class="card">
+    <section class="card hidden" data-panel="coupons">
       <h2>Coupons (launch offer / discount codes)</h2>
       <form id="couponForm" class="grid">
         <div class="field"><label for="cCode">Code (jaise LAUNCH20)</label><input id="cCode" maxlength="20" required></div>
@@ -99,15 +128,15 @@ textarea{min-height:88px;resize:vertical}
       <div id="couponList"></div>
     </section>
 
-    <section class="card">
+    <section class="card hidden" data-panel="products">
       <div class="row" style="justify-content:space-between"><h2 style="margin:0">Products</h2><button class="btn" id="newProductBtn" type="button">Naya product</button></div>
       <p class="help">Har product ka apna link hota hai. Link copy karke wahi product promote karo.</p>
-      <div id="productList" style="margin-top:8px"></div>
+      <div class="row" style="margin:14px 0"><input id="productSearch" type="search" placeholder="Search products by name or link…" aria-label="Search products" style="max-width:430px"><select id="productFilter" aria-label="Filter products" style="max-width:160px"><option value="all">All products</option><option value="published">Live</option><option value="draft">Draft</option><option value="archived">Archived</option></select></div><div id="productList" class="product-rows" style="margin-top:8px"></div>
       <p id="listMsg" class="msg hidden"></p>
     </section>
 
-    <section class="card hidden" id="editorCard">
-      <h2 id="editorTitle">Product</h2>
+    <section class="card hidden" id="editorCard" data-panel="editor">
+      <div class="editor-top"><h2 id="editorTitle">Product</h2><button class="btn light" type="button" id="previewBtn">◉ Live preview</button></div><p class="help">Preview opens in a new tab even before you save.</p>
       <form id="settingsForm">
         <div class="grid">
           <div class="field"><label for="productName">Product name *</label><input id="productName" maxlength="100" required></div>
@@ -122,9 +151,9 @@ textarea{min-height:88px;resize:vertical}
           <div class="field full"><label for="included">Kya milega (har line mein ek item)</label><textarea id="included"></textarea></div>
           <div class="field full"><label for="faqs">FAQs (har line: Sawal | Jawab)</label><textarea id="faqs"></textarea></div>
           <div class="field full"><label for="reviews">Testimonials: sirf genuine customers ke (har line: Naam | Review)</label><textarea id="reviews"></textarea></div>
+          <div class="field"><label for="theme">Store theme</label><select id="theme"><option value="navy">Midnight blue · Trust</option><option value="forest">Forest green · Wellness</option><option value="violet">Royal violet · Creative</option><option value="sunset">Sunset amber · Energy</option></select></div>
+          <div class="field full"><label for="deliveryUrl">Product delivery · Google Drive folder/file sharing URL</label><input id="deliveryUrl" type="url" placeholder="https://drive.google.com/drive/folders/…"><small class="help">Buyers get this link only after Cashfree payment verification. Anyone with link can share it; not DRM.</small></div>
           <div class="field full"><label for="coverImage">Cover image path (upload na ho to ye use hoga)</label><input id="coverImage"></div>
-          <div class="field full"><label for="galleryImages">Gallery preview image URLs (har line mein ek HTTPS ya /path URL, max 8)</label><textarea id="galleryImages" placeholder="https://example.com/preview-1.webp"></textarea></div>
-          <div class="field full"><label for="previewVideoUrl">Product demo / video preview URL (HTTPS)</label><input id="previewVideoUrl" type="url" placeholder="https://..."></div>
           <div class="field"><label for="brand">Store name</label><input id="brand" maxlength="60"></div>
           <div class="field"><label for="email">Support email *</label><input id="email" type="email" required></div>
           <div class="field"><label for="makerName">Creator naam</label><input id="makerName" maxlength="80"></div>
@@ -141,16 +170,16 @@ textarea{min-height:88px;resize:vertical}
       <div id="mediaArea" class="hidden" style="margin-top:18px;border-top:1px solid #e3e5f2;padding-top:16px">
         <h2>Cover aur product file</h2>
         <p class="help">Cover public hota hai. Product file private storage mein rehti hai, aur sirf paid buyer ko milti hai.</p>
-        <div class="field"><label for="coverInput">Cover image (JPG, PNG, WebP, 2 MB tak)</label><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp"></div>
+        <div class="upload-info">COVER IMAGE · Available while creating product. Without R2, JPG/PNG/WebP covers up to 350 KB are stored in D1. Larger images: compress or use a direct image URL.</div><div class="field"><label for="coverInput">Cover image (R2: 2 MB, without R2: 350 KB)</label><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp"></div>
         <div class="row" style="margin-top:8px"><button class="btn" id="coverUpload" type="button">Cover upload karo</button><button class="btn light" id="coverRemove" type="button">Cover hatao</button></div>
-        <div class="field" style="margin-top:16px"><label for="fileInput">Product file (PDF, ZIP, EPUB, MP4, MP3, DOCX, XLSX, JPG, PNG; 50 MB tak)</label><input id="fileInput" type="file"></div>
+        <div class="upload-info" style="margin-top:18px">DELIVERY FILE · For free hosting, paste a Google Drive link above.</div><div class="field" style="margin-top:12px"><label for="fileInput">Product file (PDF, ZIP, EPUB, MP4, MP3, DOCX, XLSX, JPG, PNG; 50 MB tak)</label><input id="fileInput" type="file"></div>
         <div class="row" style="margin-top:8px"><button class="btn" id="fileUpload" type="button">File upload karo</button><button class="btn light" id="fileRemove" type="button">File hatao</button></div>
         <p id="mediaCurrent" class="muted" style="margin-top:12px"></p>
         <p id="mediaStatus" class="msg hidden"></p>
       </div>
-      <p id="mediaNote" class="muted" style="margin-top:12px">Cover aur file upload karne se pehle product save karo.</p>
+      <p id="mediaNote" class="muted" style="margin-top:12px">Without R2, use an HTTPS cover image URL and Google Drive delivery link. Cover upload works without R2 for images up to 350 KB using D1; larger images need a hosted URL.</p>
     </section>
-  </div>
+  </main></div></div>
 </div>
 <script src="/admin.js" defer></script>
 </body>

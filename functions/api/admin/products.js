@@ -4,7 +4,7 @@ import { requireAdmin } from "../../_lib/admin.js";
 import { validateConfig } from "../../_lib/settings.js";
 import { SLUG_RE, slugify, listProducts, getProductById, slugTaken, writeProduct, deleteProductRow, countOrders, pickMedia, coverUrl, missingTableHint } from "../../_lib/products.js";
 
-const adminView = (p) => ({ ...p, coverUrl: p.coverKey ? coverUrl(p) : null, hasFile: Boolean(p.fileKey) });
+const adminView = (p) => ({ ...p, coverUrl: (p.coverKey || p.coverStorage === "d1") ? coverUrl(p) : null, hasFile: Boolean(p.fileKey) });
 
 export async function onRequestGet({ request, env }) {
   const denied = await requireAdmin(request, env);
@@ -38,7 +38,7 @@ export async function onRequestPost({ request, env }) {
   const previous = await getProductById(env, id);
   const status = input.status === "draft" ? "draft" : "published";
   try {
-    await writeProduct(env, { id, slug, status, ...config, ...pickMedia(previous || {}) });
+    await writeProduct(env, { id, slug, status, ...pickMedia(previous || {}), ...config });
   } catch (error) {
     console.error("Product save failed", error);
     return json({ error: "Product could not be saved. Please try again." }, 503);
@@ -54,12 +54,14 @@ export async function onRequestDelete({ request, env }) {
   const product = await getProductById(env, id);
   if (!product) return json({ error: "Product not found." }, 404);
 
-  // Products that already have orders are hidden, not deleted, so buyers keep their downloads.
-  if ((await countOrders(env, id)) > 0) {
+  // Force deletion is explicit and irreversible; historical order rows remain for accounting.
+  const force = new URL(request.url).searchParams.get("force") === "PERMANENT_DELETE";
+  if ((await countOrders(env, id)) > 0 && !force) {
     await writeProduct(env, { ...product, status: "archived" });
     return json({ ok: true, archived: true, message: "Is product par orders hain, isliye ye hidden kar diya gaya. Buyers ke download chalte rahenge." });
   }
   await deleteProductRow(env, id);
+  await env.ORDERS_DB.prepare("DELETE FROM store_settings WHERE key = ?").bind(`cover_d1_${id}`).run();
   for (const key of [product.coverKey, product.fileKey]) {
     if (key && env.PRODUCTS_BUCKET) await env.PRODUCTS_BUCKET.delete(key).catch((e) => console.error("Storage delete failed", e));
   }

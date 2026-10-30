@@ -11,7 +11,7 @@ export async function onRequestGet({ request, env }) {
   if (!validOrderId(orderId) || !providedToken || !Number.isInteger(expiresAt)) {
     return json({ error: "This download link is incomplete. Please open the link from your purchase email or the thank-you page." }, 400);
   }
-  if (!env.ORDERS_DB || !env.PRODUCTS_BUCKET || !env.DOWNLOAD_TOKEN_SECRET) {
+  if (!env.ORDERS_DB || !env.DOWNLOAD_TOKEN_SECRET) {
     return json({ error: "Secure download delivery is not configured. Please contact support." }, 503);
   }
 
@@ -33,7 +33,7 @@ export async function onRequestGet({ request, env }) {
   // The file is the one belonging to the product that was bought.
   const product = await getProductById(env, record.product_id);
   const fileKey = product?.fileKey || (record.product_id === DEFAULT_PRODUCT_ID ? env.PRODUCT_FILE_KEY : null);
-  if (!fileKey) return json({ error: "The product file is not available yet. Please contact support." }, 503);
+  if (!fileKey && !product?.deliveryUrl) return json({ error: "The product file is not available yet. Please contact support." }, 503);
 
   let order;
   try { order = await fetchCashfreeOrder(env, orderId); }
@@ -44,6 +44,10 @@ export async function onRequestGet({ request, env }) {
 
   try {
     await env.ORDERS_DB.prepare("UPDATE orders SET status = 'PAID', paid_at = COALESCE(paid_at, datetime('now')), updated_at = datetime('now') WHERE order_id = ?").bind(orderId).run();
+    if (!fileKey && product?.deliveryUrl) {
+      return new Response(null, { status: 302, headers: { Location: product.deliveryUrl, "Cache-Control": "private, no-store", "Referrer-Policy": "no-referrer" } });
+    }
+    if (!env.PRODUCTS_BUCKET) return json({ error: "Private file storage is unavailable." }, 503);
     const object = await env.PRODUCTS_BUCKET.get(fileKey);
     if (!object) return json({ error: "The product file is not available yet. Please contact support." }, 503);
     const fileName = String(product?.fileName || env.PRODUCT_FILENAME || "digital-product-download.zip").replace(/[\r\n"\\]/g, "").slice(0, 100) || "download.zip";

@@ -1,5 +1,5 @@
 {
-  "brand": "Eboora",
+  "brand": "Eboora-Store",
   "domain": "https://eboora.store",
   "email": "support@eboora.store",
   "pixelId": "YOUR_PIXEL_ID",
@@ -22,7 +22,5 @@
   "legal": "",
   "whatsapp": "",
   "responseTime": "1 business day",
-  "reviews": [],
-  "galleryImages": [],
-  "previewVideoUrl": ""
+  "reviews": []
 }

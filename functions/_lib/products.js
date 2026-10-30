@@ -4,7 +4,7 @@ import { readMedia, readStoredConfig } from "./settings.js";
 
 export const DEFAULT_PRODUCT_ID = "eboora-product";
 export const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
-const MEDIA_FIELDS = ["coverKey", "coverType", "fileKey", "fileName", "fileSize", "fileType"];
+const MEDIA_FIELDS = ["coverKey", "coverType", "fileKey", "fileName", "fileSize", "fileType", "deliveryUrl", "coverStorage"];
 const COLUMNS = "id, slug, status, data, created_at, updated_at";
 
 export const slugify = (text) => String(text ?? "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 60);
@@ -98,7 +98,7 @@ export async function deleteProductRow(env, id) {
 }
 
 export function coverUrl(p) {
-  return p.coverKey
+  return p.coverStorage === "d1" ? `/api/media/product/${encodeURIComponent(p.id)}?v=${encodeURIComponent(p.updated_at || "1")}` : p.coverKey
     ? `/api/media/product/${encodeURIComponent(p.id)}?v=${encodeURIComponent(p.updated_at || "1")}`
     : (p.coverImage || "/assets/cover.svg");
 }
@@ -106,6 +106,6 @@ export function coverUrl(p) {
 // What the public page may see: no storage keys, no internal ids.
 export function publicProduct(p) {
   const out = { ...p, productId: p.id, coverImage: coverUrl(p) };
-  for (const key of ["coverKey", "coverType", "fileKey", "fileName", "fileSize", "fileType", "id", "created_at"]) delete out[key];
+  for (const key of ["coverKey", "coverType", "fileKey", "fileName", "fileSize", "fileType", "deliveryUrl", "coverStorage", "id", "created_at"]) delete out[key];
   return out;
 }

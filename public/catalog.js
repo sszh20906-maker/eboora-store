@@ -20,6 +20,8 @@ function el(tag, cls, text) {
       img.src = p.coverImage;
       img.alt = p.name || '';
       img.loading = 'lazy';
+      img.decoding = 'async';
+      img.addEventListener('error', () => { if (!img.src.endsWith('/assets/cover.svg')) img.src = '/assets/cover.svg'; });
       const body = el('div', 'body');
       body.append(el('div', 'muted', p.eyebrow || 'Digital download'), el('div', 'name', p.name || 'Digital product'), el('div', 'muted', p.headline || ''));
       const price = el('div', 'price', money(p.price));

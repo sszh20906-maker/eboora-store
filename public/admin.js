@@ -1,6 +1,7 @@
 const $ = id => document.getElementById(id);
 const STATUS_LABEL = { PAID: 'Paid', CREATED: 'Unpaid', FAILED: 'Failed', CANCELLED: 'Cancelled' };
 let storeProductName = '';
+let cachedProducts = [];
 
 const money = n => '₹' + Number(n || 0).toLocaleString('en-IN', { maximumFractionDigits: 2 });
 const lines = v => v.split('\n').map(s => s.trim()).filter(Boolean);
@@ -30,8 +31,8 @@ function readForm() {
     price: $('price').value,
     mrp: $('mrp').value,
     coverImage: $('coverImage').value,
-    galleryImages: lines($('galleryImages').value),
-    previewVideoUrl: $('previewVideoUrl').value,
+    deliveryUrl: $('deliveryUrl').value.trim(),
+    theme: $('theme').value,
     benefits: lines($('benefits').value).map(l => { const [title, description] = splitPipe(l); return { title, description }; }),
     included: lines($('included').value).map(title => ({ title })),
     faqs: lines($('faqs').value).map(l => { const [question, answer] = splitPipe(l); return { question, answer }; }).filter(f => f.question && f.answer),
@@ -51,7 +52,7 @@ function fillForm(p) {
   storeProductName = p.productName || '';
   $('slug').value = p.slug || '';
   $('status').value = p.status === 'draft' ? 'draft' : 'published';
-  $('brand').value = p.brand || 'Eboora';
+  $('brand').value = p.brand || 'Eboora-Store';
   $('email').value = p.email || '';
   $('productName').value = p.productName || '';
   $('eyebrow').value = p.eyebrow || 'Digital download';
@@ -60,8 +61,8 @@ function fillForm(p) {
   $('price').value = p.price || '';
   $('mrp').value = p.mrp || '';
   $('coverImage').value = p.coverImage || '/assets/cover.svg';
-  $('galleryImages').value = (p.galleryImages || []).join('\n');
-  $('previewVideoUrl').value = p.previewVideoUrl || '';
+  $('deliveryUrl').value = p.deliveryUrl || '';
+  $('theme').value = p.theme || 'navy';
   $('benefits').value = (p.benefits || []).map(b => b.description ? b.title + ' | ' + b.description : b.title).join('\n');
   $('included').value = (p.included || []).map(x => x.title).join('\n');
   $('faqs').value = (p.faqs || []).map(f => f.question + ' | ' + f.answer).join('\n');
@@ -194,6 +195,7 @@ async function loadOrders() {
     const d = await api('/api/admin/orders?status=' + encodeURIComponent($('statusFilter').value));
     renderSummary(d.summary || {});
     renderToday(d.today || { count: 0, total: 0 });
+    drawOverview(d);
     const list = d.orders || [];
     $('orderList').replaceChildren(...list.map(orderCard));
     $('ordersMsg').textContent = list.length ? '' : 'Is filter mein koi order nahi hai.';
@@ -253,6 +255,8 @@ $('settingsForm').addEventListener('submit', async e => {
 });
 
 $('newProductBtn').addEventListener('click', () => openEditor(null));
+$('productSearch').addEventListener('input', () => renderProducts(cachedProducts));
+$('productFilter').addEventListener('change', () => renderProducts(cachedProducts));
 $('cancelEdit').addEventListener('click', closeEditor);
 openAdmin();
 
@@ -328,6 +332,11 @@ function renderProducts(list) {
     const head = el('div', 'order-head');
     const label = p.status === 'published' ? 'Live' : (p.status === 'draft' ? 'Draft' : 'Hidden');
     head.append(el('strong', '', p.productName || 'Bina naam'), el('span', p.status === 'published' ? 'badge b-paid' : 'badge b-other', label));
+    const thumbnail = el('img', 'product-thumb');
+    thumbnail.src = p.coverUrl || p.coverImage || '/assets/cover.svg';
+    thumbnail.alt = ''; thumbnail.loading = 'lazy';
+    thumbnail.onerror = () => { thumbnail.onerror = null; thumbnail.src = '/assets/cover.svg'; };
+    row.append(thumbnail);
     row.append(head);
     row.append(el('div', 'muted', money(p.price) + '  ·  ' + location.origin + '/landing.html?slug=' + p.slug));
     const actions = el('div', 'row');
@@ -343,7 +352,7 @@ function renderProducts(list) {
     edit.type = 'button';
     edit.addEventListener('click', () => openEditor(p));
     const del = el('button', 'btn light', 'Delete');
-    del.type = 'button';
+    del.type = 'button'; del.classList.add('delete-btn');
     del.addEventListener('click', () => deleteProduct(p));
     actions.append(copy, open, edit, del);
     row.append(actions);
@@ -364,16 +373,17 @@ function openEditor(p) {
   fillForm(p || null);
   $('editorTitle').textContent = p ? 'Product edit karo' : 'Naya product';
   $('editorCard').classList.remove('hidden');
-  $('mediaArea').classList.toggle('hidden', !p);
+  $('mediaArea').classList.remove('hidden');
   $('mediaNote').classList.toggle('hidden', Boolean(p));
   renderMedia(p);
   setSaveMsg('', '');
-  $('editorCard').scrollIntoView({ behavior: 'smooth' });
+  setTab('editor');
 }
 
 function closeEditor() {
   currentProduct = null;
   $('editorCard').classList.add('hidden');
+  setTab('products');
 }
 
 async function copyLink(slug) {
@@ -387,11 +397,13 @@ async function copyLink(slug) {
 }
 
 async function deleteProduct(p) {
-  if (!window.confirm('"' + (p.productName || p.slug) + '" delete karein?')) return;
+  if (!window.confirm('"' + (p.productName || p.slug) + '" delete karein? Existing buyers honge to pehle archive hoga.')) return;
+  const permanent = window.confirm('PERMANENT DELETE bhi karna hai? OK = D1 product permanently remove; purane buyers ke download links BREAK ho sakte hain. Cancel = safe archive.');
+  if (permanent && window.prompt('Permanent deletion confirm karne ke liye DELETE likho:') !== 'DELETE') return;
   try {
-    const d = await api('/api/admin/products?id=' + encodeURIComponent(p.id), { method: 'DELETE', body: '{}' });
+    const d = await api('/api/admin/products?id=' + encodeURIComponent(p.id) + (permanent ? '&force=PERMANENT_DELETE' : ''), { method: 'DELETE', body: '{}' });
     if (currentProduct && currentProduct.id === p.id) closeEditor();
-    setListMsg(d.archived ? d.message : 'Product delete ho gaya.', 'ok');
+    setListMsg(d.archived ? d.message : 'Product D1 se permanently delete ho gaya.', 'ok');
     loadProducts();
   } catch (err) {
     setListMsg(err.message, 'bad');
@@ -410,13 +422,25 @@ function setMediaStatus(text, cls) {
 
 function renderMedia(p) {
   const m = p || {};
-  const cover = m.coverKey ? 'Cover: uploaded' : 'Cover: abhi nahi hai (default image dikhegi)';
-  const file = m.fileKey ? 'File: ' + m.fileName + ' (' + (Number(m.fileSize) / 1048576).toFixed(2) + ' MB)' : 'File: abhi upload nahi hui';
+  const cover = (m.coverKey || m.coverStorage === 'd1') ? 'Cover: uploaded' : (m.coverImage && m.coverImage !== '/assets/cover.svg' ? 'Cover: external URL' : 'Cover: default image');
+  const file = m.fileKey ? 'File: ' + m.fileName + ' (' + (Number(m.fileSize) / 1048576).toFixed(2) + ' MB)' : (m.deliveryUrl ? 'Delivery: Google Drive link saved' : 'Delivery: not configured');
   $('mediaCurrent').textContent = cover + '  ·  ' + file;
 }
 
 async function uploadMedia(kind) {
-  if (!currentProduct) { setMediaStatus('Pehle product save karo.', 'bad'); return; }
+  const selected = $(kind === 'cover' ? 'coverInput' : 'fileInput');
+  if (!selected.files?.length) { setMediaStatus('Pehle file select karo.', 'bad'); return; }
+  if (!currentProduct) {
+    if (!$('settingsForm').reportValidity()) { setMediaStatus('Required product details fill karo.', 'bad'); return; }
+    setMediaStatus('First product is being saved automatically...', '');
+    try {
+      const d = await api('/api/admin/products', { method: 'POST', body: JSON.stringify(readForm()) });
+      currentProduct = d.product;
+      $('slug').value = d.product.slug;
+      $('mediaNote').classList.add('hidden');
+      loadProducts();
+    } catch (err) { setMediaStatus('Save failed: ' + err.message, 'bad'); return; }
+  }
   const input = $(kind === 'cover' ? 'coverInput' : 'fileInput');
   const file = input.files && input.files[0];
   if (!file) { setMediaStatus('Pehle file select karo.', 'bad'); return; }
@@ -467,3 +491,49 @@ $('coverUpload').addEventListener('click', () => uploadMedia('cover'));
 $('fileUpload').addEventListener('click', () => uploadMedia('file'));
 $('coverRemove').addEventListener('click', () => removeMedia('cover'));
 $('fileRemove').addEventListener('click', () => removeMedia('file'));
+
+// Separate accessible workspace tabs; overview gives a simple live paid-sales chart.
+function setTab(tab) {
+  document.querySelectorAll('[data-panel]').forEach(node => node.classList.toggle('hidden', node.dataset.panel !== tab));
+  document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab || (tab === 'editor' && btn.dataset.tab === 'products')));
+  if (tab === 'editor') $('editorCard').classList.remove('hidden');
+  const title = $('workspaceTitle'); if (title) title.textContent = ({overview:'Overview',orders:'Orders',products:'Products',coupons:'Coupons',editor:'Product studio'})[tab] || 'Overview';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
+$('previewBtn').addEventListener('click', async () => {
+  const f = readForm();
+  const config = { ...f, maker: { name: f.makerName, line: f.makerLine } };
+  const cover = $('coverInput').files?.[0];
+  if (cover) {
+    if (!['image/jpeg','image/png','image/webp'].includes(cover.type) || cover.size > 2 * 1024 * 1024) {
+      setSaveMsg('Preview cover JPG/PNG/WebP aur 2 MB se chhota hona chahiye.', 'bad'); return;
+    }
+    try {
+      config.coverImage = await new Promise((resolve, reject) => {
+        const reader = new FileReader(); reader.onload = () => resolve(reader.result);
+        reader.onerror = reject; reader.readAsDataURL(cover);
+      });
+    } catch { setSaveMsg('Cover preview load nahi hua.', 'bad'); return; }
+  }
+  try { localStorage.setItem('eboora-preview-config', JSON.stringify(config)); }
+  catch { setSaveMsg('Preview storage full hai. Chhota cover try karo.', 'bad'); return; }
+  window.open('/landing.html?preview=1', '_blank', 'noopener');
+});
+function drawOverview(d) {
+  const paid = d.summary?.PAID || { count: 0, total: 0 };
+  const created = d.summary?.CREATED || { count: 0, total: 0 };
+  const metrics = [['Total revenue', money(paid.total)], ['Paid orders', paid.count], ['Pending checkouts', created.count], ['Today paid', money(d.today?.total)]];
+  $('overviewStats').replaceChildren(...metrics.map(([label, value]) => { const x=el('div','stat'); x.append(el('span','muted',label),el('b','',String(value)));return x; }));
+  const dates = Array.from({length:14}, (_,i) => { const x=new Date(); x.setUTCHours(0,0,0,0); x.setUTCDate(x.getUTCDate()-13+i); return x.toISOString().slice(0,10); });
+  const values = dates.map(day => (d.revenueByDay || []).find(x => x.day === day)?.total || 0);
+  const max = Math.max(1,...values); const W=680,H=210, pad=32;
+  const dots=values.map((v,i)=>`${pad + i*(W-2*pad)/13},${H-pad-v/max*(H-2*pad)}`);
+  const svgNS='http://www.w3.org/2000/svg'; const svg=document.createElementNS(svgNS,'svg'); svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.setAttribute('role','img');svg.setAttribute('aria-label','Last 14 days paid revenue');
+  const grid=document.createElementNS(svgNS,'path');grid.setAttribute('d',`M${pad} ${H-pad} H${W-pad}`);grid.setAttribute('stroke','#ccdcf1');grid.setAttribute('fill','none');svg.append(grid);
+  const area=document.createElementNS(svgNS,'polygon');area.setAttribute('points',`${pad},${H-pad} ${dots.join(' ')} ${W-pad},${H-pad}`);area.setAttribute('fill','#e2edff');svg.append(area);
+  const line=document.createElementNS(svgNS,'polyline');line.setAttribute('points',dots.join(' '));line.setAttribute('fill','none');line.setAttribute('stroke','#1666e9');line.setAttribute('stroke-width','3');line.setAttribute('stroke-linecap','round');svg.append(line);
+  const x=document.createElementNS(svgNS,'text');x.setAttribute('x',pad);x.setAttribute('y',H-7);x.setAttribute('class','axis');x.textContent=dates[0].slice(5);svg.append(x);
+  const y=document.createElementNS(svgNS,'text');y.setAttribute('x',W-pad-36);y.setAttribute('y',H-7);y.setAttribute('class','axis');y.textContent=dates[13].slice(5);svg.append(y);
+  $('salesChart').replaceChildren(svg);
+}
