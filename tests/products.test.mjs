@@ -67,4 +67,29 @@ const good = (extra = {}) => ({ productName: "Creator Kit", headline: "Fast resu
   console.log("Missing products table test passed.");
 }
 
+// 5. The thank-you page gets the support contact of the product that was bought
+{
+  const { makeDb: freshDb } = await import("./helpers/mockdb.mjs");
+  const { onRequestGet: verifyOrder } = await import("../functions/api/verify-order.js");
+  const db = freshDb();
+  const env = { ...envFor(db), CASHFREE_ENV: "sandbox", CASHFREE_APP_ID: "app", CASHFREE_SECRET_KEY: "secret", CASHFREE_API_VERSION: "2026-01-01", SITE_URL: "https://shop.example.test", DOWNLOAD_TOKEN_SECRET: "products-test-download-secret-at-least-32-chars" };
+  db.products.set("p-support-1", { id: "p-support-1", slug: "support-kit", status: "published", data: JSON.stringify({ productName: "Support Kit", email: "kit-support@example.test", whatsapp: "919876543210", price: 199, currency: "INR" }), created_at: "2026-10-30", updated_at: "2026-10-30" });
+  db.orders.set("ck_support_0001", { order_id: "ck_support_0001", product_id: "p-support-1", amount: 199, currency: "INR", customer_name: "Asha", customer_email: "asha@example.test", customer_phone: "9876543210", status: "CREATED", email_status: "PENDING", meta_status: "PENDING", created_at: "2026-10-30 10:00:00", paid_at: null });
+  const nativeFetch = global.fetch;
+  global.fetch = async (url) => {
+    if (String(url).includes("/pg/orders/")) return new Response(JSON.stringify({ order_status: "PAID", order_amount: 199, order_currency: "INR" }), { status: 200, headers: { "Content-Type": "application/json" } });
+    throw new Error("Unexpected fetch " + url);
+  };
+  try {
+    const res = await verifyOrder({ request: new Request("https://shop.example.test/api/verify-order?order_id=ck_support_0001"), env });
+    const body = await res.json();
+    assert.equal(body.paid, true);
+    assert.equal(body.support.email, "kit-support@example.test");
+    assert.equal(body.support.whatsapp, "919876543210");
+    console.log("Thank-you support contact test passed.");
+  } finally {
+    global.fetch = nativeFetch;
+  }
+}
+
 console.log("All product tests passed.");

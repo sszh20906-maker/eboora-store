@@ -15,6 +15,7 @@ function view(kind,icon,title,msg){
 }
 function done(d){
   view("ok","✓","Payment received","Thank you! Your files are ready.");
+  if(d.support){ if(d.support.email){ $("mail").textContent=d.support.email; $("mail").href="mailto:"+d.support.email; } if(d.support.whatsapp){ $("wa").href="https://wa.me/"+d.support.whatsapp; $("waWrap").hidden=false; } }
   if(d.download_url && d.download_url.startsWith("https://")){
     $("dl").href=d.download_url; $("dl").hidden=false;
   }

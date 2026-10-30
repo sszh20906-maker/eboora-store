@@ -1,1 +1,3 @@
+/product /  301
+/product-page /  301
 /p/* /product-page.html 200

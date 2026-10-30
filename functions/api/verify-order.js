@@ -2,6 +2,13 @@
 // The customer-facing page never decides payment success from the URL alone.
 import { json, fetchCashfreeOrder, validOrderId, amountMatches, makeDownloadUrl, maskEmail } from "../_lib/commerce.js";
 import { clientIp, countHit } from "../_lib/ratelimit.js";
+import { getProductById } from "../_lib/products.js";
+
+// The support contact of the product that was bought (not the store-wide one).
+async function supportFor(env, productId) {
+  const p = await getProductById(env, productId);
+  return p ? { email: p.email || "", whatsapp: String(p.whatsapp || "").replace(/\D/g, "") } : null;
+}
 
 export async function onRequestGet({ request, env }) {
   if (!env.ORDERS_DB) return json({ paid: false, status: "ORDER_STORAGE_NOT_CONFIGURED" }, 503);
@@ -41,7 +48,8 @@ export async function onRequestGet({ request, env }) {
       amount: record.amount,
       currency: record.currency,
       download_url: downloadUrl,
-      email_hint: maskEmail(record.customer_email)
+      email_hint: maskEmail(record.customer_email),
+      support: await supportFor(env, record.product_id)
     });
   } catch (error) {
     console.error("Could not prepare verified download", error);
