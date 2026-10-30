@@ -5,3 +5,9 @@ pages_build_output_dir = "public"
 # D1 and R2 resources should be created in your Cloudflare account, then bound
 # to the Pages project as ORDERS_DB and PRODUCTS_BUCKET. Keep account-specific
 # database IDs and real secrets out of this template repository.
+
+# D1 database for orders, coupons and settings. The database ID is not a secret.
+[[d1_databases]]
+binding = "ORDERS_DB"
+database_name = "eboora-orders"
+database_id = "7c6ef731-1f70-4c3d-a5aa-9a4d6515e451"
