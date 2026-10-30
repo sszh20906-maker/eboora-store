@@ -49,18 +49,36 @@ async function migrateLegacy(env) {
   await writeProduct(env, { ...legacy, ...pickMedia(media), id: DEFAULT_PRODUCT_ID, slug, status: "published" });
 }
 
+// Checkout and download must keep working even if the products table is missing; they fall back to the old settings.
 export async function getProductById(env, id) {
   if (!env.ORDERS_DB || !id) return null;
-  await migrateLegacy(env);
-  const row = await env.ORDERS_DB.prepare(`SELECT ${COLUMNS} FROM products WHERE id = ? LIMIT 1`).bind(id).first();
-  return parseRow(row);
+  try {
+    await migrateLegacy(env);
+    const row = await env.ORDERS_DB.prepare(`SELECT ${COLUMNS} FROM products WHERE id = ? LIMIT 1`).bind(id).first();
+    return parseRow(row);
+  } catch (error) {
+    console.error("Product lookup failed (is the products table created?)", error);
+    return null;
+  }
 }
 
 export async function getProductBySlug(env, slug) {
   if (!env.ORDERS_DB || !slug) return null;
-  await migrateLegacy(env);
-  const row = await env.ORDERS_DB.prepare(`SELECT ${COLUMNS} FROM products WHERE slug = ? LIMIT 1`).bind(slug).first();
-  return parseRow(row);
+  try {
+    await migrateLegacy(env);
+    const row = await env.ORDERS_DB.prepare(`SELECT ${COLUMNS} FROM products WHERE slug = ? LIMIT 1`).bind(slug).first();
+    return parseRow(row);
+  } catch (error) {
+    console.error("Product lookup by link failed (is the products table created?)", error);
+    return null;
+  }
+}
+
+// A clear message for the owner when the products table has not been created in D1 yet.
+export function missingTableHint(error) {
+  return /no such table/i.test(String(error?.message || ""))
+    ? "Products table D1 mein nahi mili. D1 Console mein schema.sql ka 'products' block run karo, phir dobara try karo."
+    : "Products load nahi hue. Cloudflare logs mein error dekho.";
 }
 
 export async function listProducts(env, { publishedOnly = false } = {}) {

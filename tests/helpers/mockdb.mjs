@@ -15,6 +15,7 @@ export function makeDb() {
   const refunds = [];
   const sessions = new Map();
   const products = new Map();
+  const flags = { productsMissing: false };
   sessions.set(TEST_SESSION_HASH, { expires_at: Math.floor(Date.now() / 1000) + 3600 });
 
   const allRows = (sql, args) => {
@@ -104,9 +105,18 @@ export function makeDb() {
     return 0;
   };
 
+  const failing = {
+    bind() { return failing; },
+    async first() { throw new Error("D1_ERROR: no such table: products"); },
+    async all() { throw new Error("D1_ERROR: no such table: products"); },
+    async run() { throw new Error("D1_ERROR: no such table: products"); }
+  };
+
   return {
+    flags,
     settings, orders, rateLimits, notifications, coupons, orderDiscounts, refunds, sessions, products,
     prepare(sql) {
+      if (flags.productsMissing && sql.includes("products")) return failing;
       return {
         bind(...args) {
           return {

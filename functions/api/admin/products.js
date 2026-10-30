@@ -2,14 +2,20 @@
 import { json } from "../../_lib/commerce.js";
 import { requireAdmin } from "../../_lib/admin.js";
 import { validateConfig } from "../../_lib/settings.js";
-import { SLUG_RE, slugify, listProducts, getProductById, slugTaken, writeProduct, deleteProductRow, countOrders, pickMedia, coverUrl } from "../../_lib/products.js";
+import { SLUG_RE, slugify, listProducts, getProductById, slugTaken, writeProduct, deleteProductRow, countOrders, pickMedia, coverUrl, missingTableHint } from "../../_lib/products.js";
 
 const adminView = (p) => ({ ...p, coverUrl: p.coverKey ? coverUrl(p) : null, hasFile: Boolean(p.fileKey) });
 
 export async function onRequestGet({ request, env }) {
   const denied = await requireAdmin(request, env);
   if (denied) return denied;
-  const rows = await listProducts(env);
+  let rows;
+  try {
+    rows = await listProducts(env);
+  } catch (error) {
+    console.error("Product list failed", error);
+    return json({ error: missingTableHint(error) }, 503);
+  }
   return json({ products: rows.map(adminView) });
 }
 

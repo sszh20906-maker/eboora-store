@@ -53,4 +53,18 @@ const good = (extra = {}) => ({ productName: "Creator Kit", headline: "Fast resu
   console.log("Delete and archive test passed.");
 }
 
+// 4. Products table not created yet: clear message for the owner, and no crash for buyers
+{
+  const { makeDb: freshDb } = await import("./helpers/mockdb.mjs");
+  const db = freshDb();
+  const env = envFor(db);
+  db.flags.productsMissing = true;
+  const res = await listAdmin({ request: req("/api/admin/products"), env });
+  assert.equal(res.status, 503);
+  assert.match((await res.json()).error, /schema\.sql/);
+  const { getProductById } = await import("../functions/_lib/products.js");
+  assert.equal(await getProductById(env, "eboora-product"), null, "lookups must not throw when the table is missing");
+  console.log("Missing products table test passed.");
+}
+
 console.log("All product tests passed.");
