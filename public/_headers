@@ -16,9 +16,6 @@
 /admin.js
   Cache-Control: no-store
 
-/product.html
-  Cache-Control: no-cache
-
 /landing.js
   Cache-Control: no-cache
 
