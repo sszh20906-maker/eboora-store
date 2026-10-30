@@ -239,7 +239,7 @@ $('settingsForm').addEventListener('submit', async e => {
     $('mediaArea').classList.remove('hidden');
     $('mediaNote').classList.add('hidden');
     renderMedia(d.product);
-    setSaveMsg('Save ho gaya. Link: ' + location.origin + '/p/' + d.product.slug, 'ok');
+    setSaveMsg('Save ho gaya. Link: ' + location.origin + '/landing.html?slug=' + d.product.slug, 'ok');
     loadProducts();
   } catch (err) {
     setSaveMsg(err.message, 'bad');
@@ -325,14 +325,14 @@ function renderProducts(list) {
     const label = p.status === 'published' ? 'Live' : (p.status === 'draft' ? 'Draft' : 'Hidden');
     head.append(el('strong', '', p.productName || 'Bina naam'), el('span', p.status === 'published' ? 'badge b-paid' : 'badge b-other', label));
     row.append(head);
-    row.append(el('div', 'muted', money(p.price) + '  ·  ' + location.origin + '/p/' + p.slug));
+    row.append(el('div', 'muted', money(p.price) + '  ·  ' + location.origin + '/landing.html?slug=' + p.slug));
     const actions = el('div', 'row');
     actions.style.marginTop = '8px';
     const copy = el('button', 'btn light', 'Link copy karo');
     copy.type = 'button';
     copy.addEventListener('click', () => copyLink(p.slug));
     const open = el('a', 'btn light', 'Dekho');
-    open.href = '/p/' + encodeURIComponent(p.slug);
+    open.href = '/landing.html?slug=' + encodeURIComponent(p.slug);
     open.target = '_blank';
     open.rel = 'noopener';
     const edit = el('button', 'btn light', 'Edit');
@@ -373,7 +373,7 @@ function closeEditor() {
 }
 
 async function copyLink(slug) {
-  const url = location.origin + '/p/' + slug;
+  const url = location.origin + '/landing.html?slug=' + slug;
   try {
     await navigator.clipboard.writeText(url);
     setListMsg('Link copy ho gaya: ' + url, 'ok');

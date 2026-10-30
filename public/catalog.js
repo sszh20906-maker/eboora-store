@@ -15,7 +15,7 @@ function el(tag, cls, text) {
     if (!items.length) { empty.classList.remove('hidden'); return; }
     items.forEach((p) => {
       const card = el('a', 'item');
-      card.href = '/p/' + encodeURIComponent(p.slug);
+      card.href = '/landing.html?slug=' + encodeURIComponent(p.slug);
       const img = el('img');
       img.src = p.coverImage;
       img.alt = p.name || '';
