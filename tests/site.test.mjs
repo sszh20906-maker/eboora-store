@@ -29,7 +29,7 @@ for (const f of PAGES) {
 }
 
 // 4. Client scripts never inject HTML from data (XSS guard)
-for (const js of ["index.js", "thank-you.js", "admin.js"]) {
+for (const js of ["landing.js", "thank-you.js", "admin.js"]) {
   assert.ok(existsSync(join(PUBLIC, js)), js + " is missing");
   assert.ok(!/innerHTML|outerHTML|insertAdjacentHTML|document\.write/.test(read(js)), js + " uses unsafe HTML injection");
 }
@@ -52,7 +52,7 @@ const none = validateConfig({ productName: "K", headline: "H", description: "D",
 assert.deepEqual(none.config.reviews, []);
 
 // 7. Empty store: buyers see a clear "no product" state, never an admin redirect
-const indexJs = read("index.js");
+const indexJs = read("landing.js");
 assert.ok(!indexJs.includes("/admin.html"), "storefront script must not redirect to admin");
 assert.ok(indexJs.includes("No product listed yet"), "empty state text is missing");
 assert.ok(indexJs.includes("not ready to be bought yet"), "not-ready message is missing");
