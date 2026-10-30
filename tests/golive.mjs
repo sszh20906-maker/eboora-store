@@ -23,6 +23,9 @@ console.log("  - Cloudflare: OWNER_EMAIL set (where new-sale alerts go); schema.
 console.log("  - A real test purchase completed end to end, and the download email received");
 console.log("  - Legal pages reviewed by you or a lawyer (they are templates, not legal advice)");
 
+console.log("  - Storage: R2 bucket bound as PRODUCTS_BUCKET; upload the product file and cover from the admin page");
+console.log("  - Meta: pixel ID saved in admin page; META_CAPI_TOKEN set as a Cloudflare Secret (never paste it into chat)");
+
 if (problems) {
   console.log("\n" + problems + " legal placeholder(s) still need your real business details.");
   process.exit(1);

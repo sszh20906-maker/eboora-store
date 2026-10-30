@@ -72,3 +72,13 @@ CREATE TABLE IF NOT EXISTS admin_sessions (
   token_hash TEXT PRIMARY KEY,
   expires_at INTEGER NOT NULL
 );
+
+-- Products: each has its own link (slug), price, file, cover and Meta pixel. Safe to run more than once.
+CREATE TABLE IF NOT EXISTS products (
+  id TEXT PRIMARY KEY,
+  slug TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'published' CHECK (status IN ('draft', 'published', 'archived')),
+  data TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);

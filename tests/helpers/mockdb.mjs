@@ -14,9 +14,15 @@ export function makeDb() {
   const orderDiscounts = new Map();
   const refunds = [];
   const sessions = new Map();
+  const products = new Map();
   sessions.set(TEST_SESSION_HASH, { expires_at: Math.floor(Date.now() / 1000) + 3600 });
 
   const allRows = (sql, args) => {
+    if (sql.includes("FROM products")) {
+      let rows = [...products.values()];
+      if (sql.includes("status = 'published'")) rows = rows.filter((p) => p.status === "published");
+      return { results: rows };
+    }
     if (sql.includes("GROUP BY status")) {
       const groups = {};
       for (const o of orders.values()) {
@@ -79,6 +85,13 @@ export function makeDb() {
       return 1;
     }
     if (sql.includes("DELETE FROM order_notifications")) { notifications.delete(args[0] + ":owner_sale"); return 1; }
+    if (sql.includes("INSERT INTO products")) {
+      const [id, slug, status, data] = args;
+      const prev = products.get(id);
+      products.set(id, { id, slug, status, data, created_at: prev?.created_at || "2026-10-29 10:00:00", updated_at: "2026-10-29 10:00:00" });
+      return 1;
+    }
+    if (sql.includes("DELETE FROM products")) { products.delete(args[0]); return products.size >= 0 ? 1 : 0; }
     if (sql.includes("INSERT INTO admin_sessions")) { sessions.set(args[0], { expires_at: args[1] }); return 1; }
     if (sql.includes("DELETE FROM admin_sessions")) {
       if (sql.includes("expires_at <")) {
@@ -92,7 +105,7 @@ export function makeDb() {
   };
 
   return {
-    settings, orders, rateLimits, notifications, coupons, orderDiscounts, refunds, sessions,
+    settings, orders, rateLimits, notifications, coupons, orderDiscounts, refunds, sessions, products,
     prepare(sql) {
       return {
         bind(...args) {
@@ -108,6 +121,12 @@ export function makeDb() {
               if (sql.includes("FROM rate_limits")) {
                 const cur = rateLimits.get(args[0]);
                 return cur ? { count: cur.count, window_start: cur.window_start } : null;
+              }
+              if (sql.includes("COUNT(*) AS n FROM orders")) return { n: [...orders.values()].filter((o) => o.product_id === args[0]).length };
+              if (sql.includes("FROM products")) {
+                if (sql.includes("AND id != ?")) { const hit = [...products.values()].find((p) => p.slug === args[0] && p.id !== args[1]); return hit ? { id: hit.id } : null; }
+                if (sql.includes("WHERE id = ?")) { const p = products.get(args[0]); return p ? { ...p } : null; }
+                if (sql.includes("WHERE slug = ?")) { const p = [...products.values()].find((x) => x.slug === args[0]); return p ? { ...p } : null; }
               }
               if (sql.includes("FROM admin_sessions")) { const s = sessions.get(args[0]); return s ? { expires_at: s.expires_at } : null; }
               if (sql.includes("FROM store_settings")) {

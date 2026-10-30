@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "check": "node --check functions/_lib/commerce.js && node --check functions/api/create-order.js && node --check functions/api/verify-order.js && node --check functions/api/download.js && node --check functions/api/cashfree-webhook.js && node tests/commerce.test.mjs && node tests/checkout-flow.test.mjs && node tests/admin.test.mjs && node tests/security.test.mjs && node --check public/index.js && node --check public/thank-you.js && node --check public/admin.js && node tests/site.test.mjs && node tests/payments.test.mjs && node tests/auth.test.mjs && node tests/features.test.mjs && node --check public/resend.js",
+    "check": "node --check functions/_lib/commerce.js && node --check functions/api/create-order.js && node --check functions/api/verify-order.js && node --check functions/api/download.js && node --check functions/api/cashfree-webhook.js && node tests/commerce.test.mjs && node tests/checkout-flow.test.mjs && node tests/admin.test.mjs && node tests/security.test.mjs && node --check public/index.js && node --check public/thank-you.js && node --check public/admin.js && node tests/site.test.mjs && node tests/payments.test.mjs && node tests/auth.test.mjs && node tests/media.test.mjs && node tests/products.test.mjs && node tests/features.test.mjs && node --check public/resend.js",
     "golive": "node tests/golive.mjs"
   }
 }

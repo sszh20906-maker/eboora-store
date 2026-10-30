@@ -86,3 +86,24 @@ export function validateConfig(input) {
   };
   return { errors: [], config };
 }
+
+// Generic owner settings (stored in store_settings). Used for media keys and the Meta pixel.
+export async function readSetting(env, key) {
+  if (!env.ORDERS_DB) return null;
+  try {
+    const row = await env.ORDERS_DB.prepare("SELECT value FROM store_settings WHERE key = ? LIMIT 1").bind(key).first();
+    return row ? JSON.parse(row.value) : null;
+  } catch (error) {
+    console.error("Setting read failed", key, error);
+    return null;
+  }
+}
+
+export async function writeSetting(env, key, value) {
+  await env.ORDERS_DB.prepare(
+    "INSERT INTO store_settings (key, value, updated_at) VALUES (?, ?, datetime('now')) ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at"
+  ).bind(key, JSON.stringify(value)).run();
+}
+
+export const readMedia = (env) => readSetting(env, "media");
+export const writeMedia = (env, media) => writeSetting(env, "media", media);

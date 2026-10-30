@@ -1,6 +1,7 @@
 // GET /api/download?order_id=...&exp=...&token=...
-// Serves a private R2 object only when the signed link is valid, unexpired, and the local order and Cashfree payment match.
+// Serves the purchased product's private file only when the signed link is valid, unexpired, and the order and Cashfree payment match.
 import { json, fetchCashfreeOrder, validOrderId, amountMatches, makeDownloadToken, constantTimeEqual } from "../_lib/commerce.js";
+import { DEFAULT_PRODUCT_ID, getProductById } from "../_lib/products.js";
 
 export async function onRequestGet({ request, env }) {
   const url = new URL(request.url);
@@ -10,7 +11,7 @@ export async function onRequestGet({ request, env }) {
   if (!validOrderId(orderId) || !providedToken || !Number.isInteger(expiresAt)) {
     return json({ error: "This download link is incomplete. Please open the link from your purchase email or the thank-you page." }, 400);
   }
-  if (!env.ORDERS_DB || !env.PRODUCTS_BUCKET || !env.PRODUCT_FILE_KEY || !env.DOWNLOAD_TOKEN_SECRET) {
+  if (!env.ORDERS_DB || !env.PRODUCTS_BUCKET || !env.DOWNLOAD_TOKEN_SECRET) {
     return json({ error: "Secure download delivery is not configured. Please contact support." }, 503);
   }
 
@@ -27,7 +28,12 @@ export async function onRequestGet({ request, env }) {
   let record;
   try { record = await env.ORDERS_DB.prepare("SELECT * FROM orders WHERE order_id = ? LIMIT 1").bind(orderId).first(); }
   catch (error) { console.error("Download database lookup failed", error); return json({ error: "Download is temporarily unavailable. Please try again." }, 503); }
-  if (!record || record.product_id !== String(env.PRODUCT_ID || "eboora-product")) return json({ error: "No matching purchase was found for this download." }, 404);
+  if (!record) return json({ error: "No matching purchase was found for this download." }, 404);
+
+  // The file is the one belonging to the product that was bought.
+  const product = await getProductById(env, record.product_id);
+  const fileKey = product?.fileKey || (record.product_id === DEFAULT_PRODUCT_ID ? env.PRODUCT_FILE_KEY : null);
+  if (!fileKey) return json({ error: "The product file is not available yet. Please contact support." }, 503);
 
   let order;
   try { order = await fetchCashfreeOrder(env, orderId); }
@@ -38,12 +44,12 @@ export async function onRequestGet({ request, env }) {
 
   try {
     await env.ORDERS_DB.prepare("UPDATE orders SET status = 'PAID', paid_at = COALESCE(paid_at, datetime('now')), updated_at = datetime('now') WHERE order_id = ?").bind(orderId).run();
-    const object = await env.PRODUCTS_BUCKET.get(env.PRODUCT_FILE_KEY);
+    const object = await env.PRODUCTS_BUCKET.get(fileKey);
     if (!object) return json({ error: "The product file is not available yet. Please contact support." }, 503);
-    const filename = String(env.PRODUCT_FILENAME || "digital-product-download.zip").replace(/[\r\n"\\]/g, "").slice(0, 100) || "download.zip";
+    const fileName = String(product?.fileName || env.PRODUCT_FILENAME || "digital-product-download.zip").replace(/[\r\n"\\]/g, "").slice(0, 100) || "download.zip";
     const headers = new Headers({
-      "Content-Type": object.httpMetadata?.contentType || "application/zip",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Type": object.httpMetadata?.contentType || "application/octet-stream",
+      "Content-Disposition": `attachment; filename="${fileName}"`,
       "Cache-Control": "private, no-store, max-age=0",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "no-referrer"

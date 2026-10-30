@@ -14,8 +14,13 @@ async function api(path, options = {}) {
   return d;
 }
 
+let currentProduct = null; // the saved product being edited; null while creating a new one
+
 function readForm() {
   return {
+    id: currentProduct?.id || '',
+    slug: $('slug').value,
+    status: $('status').value,
     brand: $('brand').value,
     email: $('email').value,
     productName: $('productName').value,
@@ -38,28 +43,31 @@ function readForm() {
   };
 }
 
-function fillForm(c) {
-  c = c || {};
-  storeProductName = c.productName || '';
-  $('brand').value = c.brand || 'Eboora-Store';
-  $('email').value = c.email || '';
-  $('productName').value = c.productName || '';
-  $('eyebrow').value = c.eyebrow || 'Digital download';
-  $('headline').value = c.headline || '';
-  $('description').value = c.description || '';
-  $('price').value = c.price || '';
-  $('mrp').value = c.mrp || '';
-  $('coverImage').value = c.coverImage || '/assets/cover.svg';
-  $('benefits').value = (c.benefits || []).map(b => b.description ? b.title + ' | ' + b.description : b.title).join('\n');
-  $('included').value = (c.included || []).map(x => x.title).join('\n');
-  $('faqs').value = (c.faqs || []).map(f => f.question + ' | ' + f.answer).join('\n');
-  $('reviews').value = (c.reviews || []).map(r => r.name + ' | ' + r.text).join('\n');
-  $('makerName').value = (c.maker && c.maker.name) || 'Eboora Creator';
-  $('makerLine').value = (c.maker && c.maker.line) || 'Questions about your purchase? Contact our support team.';
-  $('whatsapp').value = c.whatsapp || '';
-  $('legal').value = c.legal || '';
-  $('responseTime').value = c.responseTime || '1 business day';
-  $('pixelId').value = c.pixelId && c.pixelId !== 'YOUR_PIXEL_ID' ? c.pixelId : '';
+function fillForm(p) {
+  p = p || {};
+  currentProduct = p.id ? p : null;
+  storeProductName = p.productName || '';
+  $('slug').value = p.slug || '';
+  $('status').value = p.status === 'draft' ? 'draft' : 'published';
+  $('brand').value = p.brand || 'Eboora-Store';
+  $('email').value = p.email || '';
+  $('productName').value = p.productName || '';
+  $('eyebrow').value = p.eyebrow || 'Digital download';
+  $('headline').value = p.headline || '';
+  $('description').value = p.description || '';
+  $('price').value = p.price || '';
+  $('mrp').value = p.mrp || '';
+  $('coverImage').value = p.coverImage || '/assets/cover.svg';
+  $('benefits').value = (p.benefits || []).map(b => b.description ? b.title + ' | ' + b.description : b.title).join('\n');
+  $('included').value = (p.included || []).map(x => x.title).join('\n');
+  $('faqs').value = (p.faqs || []).map(f => f.question + ' | ' + f.answer).join('\n');
+  $('reviews').value = (p.reviews || []).map(r => r.name + ' | ' + r.text).join('\n');
+  $('makerName').value = (p.maker && p.maker.name) || 'Eboora Creator';
+  $('makerLine').value = (p.maker && p.maker.line) || 'Questions about your purchase? Contact our support team.';
+  $('whatsapp').value = p.whatsapp || '';
+  $('legal').value = p.legal || '';
+  $('responseTime').value = p.responseTime || '1 business day';
+  $('pixelId').value = p.pixelId && p.pixelId !== 'YOUR_PIXEL_ID' ? p.pixelId : '';
 }
 
 function setSaveMsg(text, cls) {
@@ -82,10 +90,10 @@ function showLoginCard() {
 
 async function openAdmin() {
   try {
-    const d = await api('/api/admin/config');
+    await api('/api/admin/products');
     $('loginCard').classList.add('hidden');
     $('app').classList.remove('hidden');
-    fillForm(d.config);
+    loadProducts();
     loadOrders();
     loadCoupons();
   } catch (err) {
@@ -224,9 +232,15 @@ $('settingsForm').addEventListener('submit', async e => {
   $('saveBtn').disabled = true;
   setSaveMsg('Save ho raha hai...', '');
   try {
-    const d = await api('/api/admin/config', { method: 'PUT', body: JSON.stringify(readForm()) });
-    storeProductName = d.config.productName;
-    setSaveMsg('Save ho gaya. Storefront par ab yahi details dikhengi.', 'ok');
+    const d = await api('/api/admin/products', { method: 'POST', body: JSON.stringify(readForm()) });
+    currentProduct = d.product;
+    storeProductName = d.product.productName;
+    $('slug').value = d.product.slug;
+    $('mediaArea').classList.remove('hidden');
+    $('mediaNote').classList.add('hidden');
+    renderMedia(d.product);
+    setSaveMsg('Save ho gaya. Link: ' + location.origin + '/p/' + d.product.slug, 'ok');
+    loadProducts();
   } catch (err) {
     setSaveMsg(err.message, 'bad');
   } finally {
@@ -234,6 +248,8 @@ $('settingsForm').addEventListener('submit', async e => {
   }
 });
 
+$('newProductBtn').addEventListener('click', () => openEditor(null));
+$('cancelEdit').addEventListener('click', closeEditor);
 openAdmin();
 
 // ----- Coupons -----
@@ -286,3 +302,164 @@ $('couponForm').addEventListener('submit', e => {
   e.preventDefault();
   saveCoupon({ code: $('cCode').value, type: $('cType').value, value: $('cValue').value, max_uses: $('cMax').value, expires_at: $('cExpires').value, active: true });
 });
+
+
+// ----- Products list -----
+function setListMsg(text, cls) {
+  const m = $('listMsg');
+  m.textContent = text;
+  m.className = 'msg ' + (cls || '');
+  m.classList.toggle('hidden', !text);
+}
+
+function renderProducts(list) {
+  const box = $('productList');
+  box.replaceChildren();
+  if (!list.length) {
+    box.append(el('p', 'muted', 'Abhi koi product nahi hai. "Naya product" dabao.'));
+    return;
+  }
+  list.forEach(p => {
+    const row = el('div', 'order');
+    const head = el('div', 'order-head');
+    const label = p.status === 'published' ? 'Live' : (p.status === 'draft' ? 'Draft' : 'Hidden');
+    head.append(el('strong', '', p.productName || 'Bina naam'), el('span', p.status === 'published' ? 'badge b-paid' : 'badge b-other', label));
+    row.append(head);
+    row.append(el('div', 'muted', money(p.price) + '  ·  ' + location.origin + '/p/' + p.slug));
+    const actions = el('div', 'row');
+    actions.style.marginTop = '8px';
+    const copy = el('button', 'btn light', 'Link copy karo');
+    copy.type = 'button';
+    copy.addEventListener('click', () => copyLink(p.slug));
+    const open = el('a', 'btn light', 'Dekho');
+    open.href = '/p/' + encodeURIComponent(p.slug);
+    open.target = '_blank';
+    open.rel = 'noopener';
+    const edit = el('button', 'btn light', 'Edit');
+    edit.type = 'button';
+    edit.addEventListener('click', () => openEditor(p));
+    const del = el('button', 'btn light', 'Delete');
+    del.type = 'button';
+    del.addEventListener('click', () => deleteProduct(p));
+    actions.append(copy, open, edit, del);
+    row.append(actions);
+    box.append(row);
+  });
+}
+
+async function loadProducts() {
+  try {
+    const d = await api('/api/admin/products');
+    renderProducts(d.products || []);
+  } catch (err) {
+    setListMsg('Products load nahi hue: ' + err.message, 'bad');
+  }
+}
+
+function openEditor(p) {
+  fillForm(p || null);
+  $('editorTitle').textContent = p ? 'Product edit karo' : 'Naya product';
+  $('editorCard').classList.remove('hidden');
+  $('mediaArea').classList.toggle('hidden', !p);
+  $('mediaNote').classList.toggle('hidden', Boolean(p));
+  renderMedia(p);
+  setSaveMsg('', '');
+  $('editorCard').scrollIntoView({ behavior: 'smooth' });
+}
+
+function closeEditor() {
+  currentProduct = null;
+  $('editorCard').classList.add('hidden');
+}
+
+async function copyLink(slug) {
+  const url = location.origin + '/p/' + slug;
+  try {
+    await navigator.clipboard.writeText(url);
+    setListMsg('Link copy ho gaya: ' + url, 'ok');
+  } catch (err) {
+    window.prompt('Ye link copy karo:', url);
+  }
+}
+
+async function deleteProduct(p) {
+  if (!window.confirm('"' + (p.productName || p.slug) + '" delete karein?')) return;
+  try {
+    const d = await api('/api/admin/products?id=' + encodeURIComponent(p.id), { method: 'DELETE', body: '{}' });
+    if (currentProduct && currentProduct.id === p.id) closeEditor();
+    setListMsg(d.archived ? d.message : 'Product delete ho gaya.', 'ok');
+    loadProducts();
+  } catch (err) {
+    setListMsg(err.message, 'bad');
+  }
+}
+
+// ----- Cover and product file (for the product being edited) -----
+const TYPE_BY_EXT = { pdf: 'application/pdf', zip: 'application/zip', epub: 'application/epub+zip', mp4: 'video/mp4', mp3: 'audio/mpeg', docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
+
+function setMediaStatus(text, cls) {
+  const m = $('mediaStatus');
+  m.textContent = text;
+  m.className = 'msg ' + (cls || '');
+  m.classList.toggle('hidden', !text);
+}
+
+function renderMedia(p) {
+  const m = p || {};
+  const cover = m.coverKey ? 'Cover: uploaded' : 'Cover: abhi nahi hai (default image dikhegi)';
+  const file = m.fileKey ? 'File: ' + m.fileName + ' (' + (Number(m.fileSize) / 1048576).toFixed(2) + ' MB)' : 'File: abhi upload nahi hui';
+  $('mediaCurrent').textContent = cover + '  ·  ' + file;
+}
+
+async function uploadMedia(kind) {
+  if (!currentProduct) { setMediaStatus('Pehle product save karo.', 'bad'); return; }
+  const input = $(kind === 'cover' ? 'coverInput' : 'fileInput');
+  const file = input.files && input.files[0];
+  if (!file) { setMediaStatus('Pehle file select karo.', 'bad'); return; }
+  const ext = (file.name.split('.').pop() || '').toLowerCase();
+  const type = file.type || TYPE_BY_EXT[ext] || 'application/octet-stream';
+  setMediaStatus('Upload ho raha hai... badi file mein kuch minute lag sakte hain.', '');
+  try {
+    const r = await fetch('/api/admin/upload?kind=' + kind + '&id=' + encodeURIComponent(currentProduct.id), {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': type, 'X-File-Name': encodeURIComponent(file.name) },
+      body: file
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Upload nahi hua.');
+    input.value = '';
+    currentProduct = d.product;
+    renderMedia(d.product);
+    setMediaStatus('Upload ho gaya.', 'ok');
+    loadProducts();
+  } catch (err) {
+    setMediaStatus(err.message, 'bad');
+  }
+}
+
+async function removeMedia(kind) {
+  if (!currentProduct) return;
+  if (!window.confirm(kind === 'cover' ? 'Cover hata dein?' : 'Product file hata dein? Naya file upload karne tak buyers ko download nahi milega.')) return;
+  try {
+    const r = await fetch('/api/admin/upload?kind=' + kind + '&id=' + encodeURIComponent(currentProduct.id), {
+      method: 'DELETE',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: '{}'
+    });
+    const d = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(d.error || 'Hata nahi hua.');
+    currentProduct = d.product;
+    renderMedia(d.product);
+    setMediaStatus('Hata diya gaya.', 'ok');
+    loadProducts();
+  } catch (err) {
+    setMediaStatus(err.message, 'bad');
+  }
+}
+
+$('coverUpload').addEventListener('click', () => uploadMedia('cover'));
+$('fileUpload').addEventListener('click', () => uploadMedia('file'));
+$('coverRemove').addEventListener('click', () => removeMedia('cover'));
+$('fileRemove').addEventListener('click', () => removeMedia('file'));

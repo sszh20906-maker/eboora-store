@@ -1,13 +1,14 @@
 // GET / PUT /api/admin/config - owner reads and saves product settings (owner login required).
 import { json } from "../../_lib/commerce.js";
 import { requireAdmin } from "../../_lib/admin.js";
-import { readStoredConfig, writeStoredConfig, validateConfig } from "../../_lib/settings.js";
+import { readStoredConfig, writeStoredConfig, validateConfig, readMedia } from "../../_lib/settings.js";
 
 export async function onRequestGet({ request, env }) {
   const denied = await requireAdmin(request, env);
   if (denied) return denied;
   const config = await readStoredConfig(env);
-  return json({ config, productId: env.PRODUCT_ID || "eboora-product" });
+  const media = await readMedia(env);
+  return json({ config, media, productId: env.PRODUCT_ID || "eboora-product" });
 }
 
 export async function onRequestPut({ request, env }) {

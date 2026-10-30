@@ -2,6 +2,7 @@
 // Cashfree-signed payment webhook -> verified D1 order state -> private download email + Meta CAPI.
 import { json, makeDownloadUrl, amountMatches, constantTimeEqual } from "../_lib/commerce.js";
 import { readStoredConfig } from "../_lib/settings.js";
+import { getProductById } from "../_lib/products.js";
 import { redeemCoupon } from "../_lib/coupons.js";
 
 const esc = (value) => String(value ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -18,7 +19,7 @@ async function validCashfreeSignature(rawBody, timestamp, signature, secret) {
 
 async function sendDownloadEmail(env, record, orderId, downloadUrl) {
   if (!env.RESEND_API_KEY || !env.FROM_EMAIL || !record.customer_email) throw new Error("Resend email configuration or customer email is missing.");
-  const product = env.PRODUCT_NAME || "your digital product";
+  const product = (await getProductById(env, record.product_id))?.productName || env.PRODUCT_NAME || "your digital product";
   const brand = env.BRAND_NAME || "Eboora-Store";
   const safeUrl = esc(downloadUrl);
   const html = `<div style="font-family:Arial,sans-serif;max-width:540px;margin:auto;color:#111827;line-height:1.65">
@@ -48,7 +49,7 @@ async function sendDownloadEmail(env, record, orderId, downloadUrl) {
 async function sendOwnerSaleEmail(env, record, orderId, amount, currency, phone) {
   const to = env.OWNER_EMAIL || (await readStoredConfig(env))?.email;
   if (!to || !env.RESEND_API_KEY || !env.FROM_EMAIL) return;
-  const product = env.PRODUCT_NAME || "your product";
+  const product = (await getProductById(env, record.product_id))?.productName || env.PRODUCT_NAME || "your product";
   const html = `<div style="font-family:Arial,sans-serif;line-height:1.6;color:#111827">
 <h2 style="margin:0 0 8px">New sale: ${esc(product)}</h2>
 <p><strong>Amount:</strong> ${esc(currency)} ${esc(amount)}<br>
@@ -74,7 +75,12 @@ const sha256 = async (value) => {
 };
 
 async function sendMetaPurchase(env, record, orderId, amount, currency, customerPhone) {
-  if (!env.META_PIXEL_ID || env.META_PIXEL_ID === "YOUR_PIXEL_ID" || !env.META_CAPI_TOKEN) return "SKIPPED";
+  // Pixel ID comes from the owner's settings; the access token stays a Cloudflare secret (META_CAPI_TOKEN).
+  const product = await getProductById(env, record.product_id);
+  const productPixel = product?.pixelId && product.pixelId !== "YOUR_PIXEL_ID" ? product.pixelId : "";
+  const stored = await readStoredConfig(env);
+  const pixelId = String(productPixel || stored?.pixelId || env.META_PIXEL_ID || "").trim();
+  if (!/^\d{5,20}$/.test(pixelId) || !env.META_CAPI_TOKEN) return "SKIPPED";
   const userData = {};
   if (record.customer_email) userData.em = [await sha256(String(record.customer_email).trim().toLowerCase())];
   if (customerPhone) {
@@ -96,7 +102,7 @@ async function sendMetaPurchase(env, record, orderId, amount, currency, customer
     }]
   };
   if (env.META_TEST_CODE) payload.test_event_code = env.META_TEST_CODE;
-  const response = await fetch(`https://graph.facebook.com/v26.0/${encodeURIComponent(env.META_PIXEL_ID)}/events?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, {
+  const response = await fetch(`https://graph.facebook.com/v26.0/${encodeURIComponent(pixelId)}/events?access_token=${encodeURIComponent(env.META_CAPI_TOKEN)}`, {
     method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload)
   });
   if (!response.ok) {

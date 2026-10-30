@@ -100,10 +100,19 @@ textarea{min-height:88px;resize:vertical}
     </section>
 
     <section class="card">
-      <h2>Product settings</h2>
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Products</h2><button class="btn" id="newProductBtn" type="button">Naya product</button></div>
+      <p class="help">Har product ka apna link hota hai. Link copy karke wahi product promote karo.</p>
+      <div id="productList" style="margin-top:8px"></div>
+      <p id="listMsg" class="msg hidden"></p>
+    </section>
+
+    <section class="card hidden" id="editorCard">
+      <h2 id="editorTitle">Product</h2>
       <form id="settingsForm">
         <div class="grid">
           <div class="field"><label for="productName">Product name *</label><input id="productName" maxlength="100" required></div>
+          <div class="field"><label for="slug">Product link (URL) *</label><input id="slug" maxlength="60" placeholder="creator-kit"><span class="help">Link: /p/creator-kit (sirf chhote letters, numbers, -)</span></div>
+          <div class="field"><label for="status">Status</label><select id="status"><option value="published">Live (store par dikhega)</option><option value="draft">Draft (hidden)</option></select></div>
           <div class="field"><label for="eyebrow">Chhota label</label><input id="eyebrow" maxlength="40"></div>
           <div class="field full"><label for="headline">Main headline *</label><input id="headline" maxlength="120" required></div>
           <div class="field full"><label for="description">Description *</label><textarea id="description" maxlength="2000" required></textarea></div>
@@ -112,8 +121,8 @@ textarea{min-height:88px;resize:vertical}
           <div class="field full"><label for="benefits">Benefits (har line: Title | Description)</label><textarea id="benefits"></textarea></div>
           <div class="field full"><label for="included">Kya milega (har line mein ek item)</label><textarea id="included"></textarea></div>
           <div class="field full"><label for="faqs">FAQs (har line: Sawal | Jawab)</label><textarea id="faqs"></textarea></div>
-          <div class="field full"><label for="reviews">Testimonials: sirf genuine customers ke (har line: Naam | Review). Khali chhod sakte ho.</label><textarea id="reviews"></textarea></div>
-          <div class="field full"><label for="coverImage">Cover image (/path ya https link)</label><input id="coverImage"></div>
+          <div class="field full"><label for="reviews">Testimonials: sirf genuine customers ke (har line: Naam | Review)</label><textarea id="reviews"></textarea></div>
+          <div class="field full"><label for="coverImage">Cover image path (upload na ho to ye use hoga)</label><input id="coverImage"></div>
           <div class="field"><label for="brand">Store name</label><input id="brand" maxlength="60"></div>
           <div class="field"><label for="email">Support email *</label><input id="email" type="email" required></div>
           <div class="field"><label for="makerName">Creator naam</label><input id="makerName" maxlength="80"></div>
@@ -121,11 +130,23 @@ textarea{min-height:88px;resize:vertical}
           <div class="field full"><label for="makerLine">Creator bio / support line</label><textarea id="makerLine" maxlength="300"></textarea></div>
           <div class="field"><label for="responseTime">Reply time</label><input id="responseTime" maxlength="60"></div>
           <div class="field"><label for="legal">Footer legal line (optional)</label><input id="legal" maxlength="200"></div>
-          <div class="field"><label for="pixelId">Meta Pixel ID (optional)</label><input id="pixelId" inputmode="numeric"></div>
+          <div class="field"><label for="pixelId">Meta Pixel ID (is product ke liye)</label><input id="pixelId" inputmode="numeric"></div>
         </div>
-        <div class="row" style="margin-top:14px"><button class="btn" id="saveBtn" type="submit">Save changes</button></div>
+        <div class="row" style="margin-top:14px"><button class="btn" id="saveBtn" type="submit">Save changes</button><button class="btn light" id="cancelEdit" type="button">Band karo</button></div>
         <p id="saveMsg" class="msg hidden"></p>
       </form>
+
+      <div id="mediaArea" class="hidden" style="margin-top:18px;border-top:1px solid #e3e5f2;padding-top:16px">
+        <h2>Cover aur product file</h2>
+        <p class="help">Cover public hota hai. Product file private storage mein rehti hai, aur sirf paid buyer ko milti hai.</p>
+        <div class="field"><label for="coverInput">Cover image (JPG, PNG, WebP, 2 MB tak)</label><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp"></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="coverUpload" type="button">Cover upload karo</button><button class="btn light" id="coverRemove" type="button">Cover hatao</button></div>
+        <div class="field" style="margin-top:16px"><label for="fileInput">Product file (PDF, ZIP, EPUB, MP4, MP3, DOCX, XLSX, JPG, PNG; 50 MB tak)</label><input id="fileInput" type="file"></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="fileUpload" type="button">File upload karo</button><button class="btn light" id="fileRemove" type="button">File hatao</button></div>
+        <p id="mediaCurrent" class="muted" style="margin-top:12px"></p>
+        <p id="mediaStatus" class="msg hidden"></p>
+      </div>
+      <p id="mediaNote" class="muted" style="margin-top:12px">Cover aur file upload karne se pehle product save karo.</p>
     </section>
   </div>
 </div>
