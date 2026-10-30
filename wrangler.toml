@@ -12,6 +12,3 @@ binding = "ORDERS_DB"
 database_name = "eboora-orders"
 database_id = "7c6ef731-1f70-4c3d-a5aa-9a4d6515e451"
 
-[[r2_buckets]]
-binding = "PRODUCTS_BUCKET"
-bucket_name = "eboora-products"
