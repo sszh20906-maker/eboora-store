@@ -3,7 +3,7 @@
   Referrer-Policy: strict-origin-when-cross-origin
   X-Frame-Options: DENY
   Permissions-Policy: camera=(), microphone=(), geolocation=()
-  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://sdk.cashfree.com https://*.cashfree.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cashfree.com https://www.facebook.com https://connect.facebook.net; frame-src https://*.cashfree.com https://www.facebook.com; form-action 'self' https://*.cashfree.com; base-uri 'none'; frame-ancestors 'none'; report-uri /api/csp-report
+  Content-Security-Policy-Report-Only: default-src 'self'; script-src 'self' https://sdk.cashfree.com https://*.cashfree.com https://connect.facebook.net; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self' https://*.cashfree.com https://www.facebook.com https://connect.facebook.net; frame-src https://*.cashfree.com https://www.facebook.com https://www.youtube-nocookie.com; form-action 'self' https://*.cashfree.com; base-uri 'none'; frame-ancestors 'none'; report-uri /api/csp-report
 
 /api/*
   Cache-Control: no-store

@@ -31,6 +31,7 @@ function readForm() {
     headlineSize: Number($('headlineSize').value),
     headlineColor: $('headlineColor').value,
     description: $('description').value,
+    videoUrl: $('videoUrl').value.trim(),
     price: $('price').value,
     mrp: $('mrp').value,
     coverImage: $('coverImage').value,
@@ -62,10 +63,11 @@ function fillForm(p) {
   $('productName').value = p.productName || '';
   $('eyebrow').value = p.eyebrow || 'Digital download';
   $('headline').value = p.headline || '';
-  $('headlineFont').value = ['Manrope','system-ui','Georgia','Arial'].includes(p.headlineFont) ? p.headlineFont : 'Manrope';
+  $('headlineFont').value = ['Manrope','system-ui','Georgia','Arial','Poppins','Montserrat','Playfair Display','Space Grotesk'].includes(p.headlineFont) ? p.headlineFont : 'Manrope';
   $('headlineSize').value = Number(p.headlineSize) >= 24 && Number(p.headlineSize) <= 64 ? p.headlineSize : 48;
   $('headlineColor').value = /^#[0-9a-fA-F]{6}$/.test(p.headlineColor || '') ? p.headlineColor : '#15172b';
   $('description').value = p.description || '';
+  $('videoUrl').value = p.videoUrl || '';
   $('price').value = p.price || '';
   $('mrp').value = p.mrp || '';
   $('coverImage').value = p.coverImage || '/assets/cover.svg';
@@ -179,6 +181,18 @@ function orderCard(o) {
     refundBtn.addEventListener('click', () => recordRefund(o));
     card.append(refundBtn);
   }
+  if (['CREATED','FAILED','CANCELLED'].includes(o.status)) {
+    const actions = el('div', 'order-actions');
+    const remove = el('button', 'btn danger-action', 'Delete order');
+    remove.type = 'button';
+    remove.addEventListener('click', async () => {
+      if (!confirm('Permanently delete this unpaid order and its contact details? This cannot be undone.')) return;
+      remove.disabled = true;
+      try { await api('/api/admin/orders', { method:'POST', body: JSON.stringify({ action:'delete', order_id:o.order_id }) }); await loadOrders(); }
+      catch (err) { $('ordersMsg').textContent = err.message; remove.disabled = false; }
+    });
+    actions.append(remove); card.append(actions);
+  }
   return card;
 }
 
@@ -237,6 +251,19 @@ $('loginForm').addEventListener('submit', async e => {
 
 $('statusFilter').addEventListener('change', loadOrders);
 $('refreshBtn').addEventListener('click', loadOrders);
+$('exportOrdersBtn').addEventListener('click', async () => {
+  const button = $('exportOrdersBtn'); button.disabled = true;
+  try {
+    const selected = $('statusFilter').value;
+    const status = selected === 'PAID' ? 'ALL' : selected;
+    const response = await fetch('/api/admin/orders', { method:'PUT', credentials:'same-origin', cache:'no-store', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status}) });
+    if (!response.ok) throw new Error((await response.json().catch(()=>({}))).error || 'Export failed');
+    const blob = await response.blob(); const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = 'eboora-' + status.toLowerCase() + '-leads.csv'; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 1500);
+  } catch (err) { $('ordersMsg').textContent = err.message; }
+  finally { button.disabled = false; }
+});
 $('logoutBtn').addEventListener('click', async () => {
   try {
     await fetch('/api/admin/logout', { method: 'POST', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' }, body: '{}' });

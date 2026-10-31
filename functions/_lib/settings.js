@@ -75,16 +75,30 @@ export function validateConfig(input) {
     .map((r) => ({ name: clean(r?.name, 60) || "Customer", text: clean(r?.text, 500) }))
     .filter((r) => r.text).slice(0, 10);
 
+  const videoUrl = clean(input.videoUrl, 400);
+  let approvedVideo = '';
+  if (videoUrl) {
+    try {
+      const u = new URL(videoUrl);
+      const host = u.hostname.toLowerCase();
+      const youtube = ['youtube.com','www.youtube.com','m.youtube.com'].includes(host) && u.pathname === '/watch' && /^[a-zA-Z0-9_-]{11}$/.test(u.searchParams.get('v') || '');
+      const short = host === 'youtu.be' && /^\/[a-zA-Z0-9_-]{11}$/.test(u.pathname);
+      if (u.protocol !== 'https:' || u.username || u.password || u.port || !(youtube || short)) throw new Error('Invalid video URL');
+      approvedVideo = videoUrl;
+    } catch { errors.push('Use a valid YouTube video URL.'); }
+  }
+  if (errors.length) return { errors, config: null };
   const config = {
     brand: clean(input.brand, 60) || "Eboora-Store",
     email,
     productName,
     eyebrow: clean(input.eyebrow, 40) || "Digital download",
     headline,
-    headlineFont: ["Manrope", "system-ui", "Georgia", "Arial"].includes(input.headlineFont) ? input.headlineFont : "Manrope",
+    headlineFont: ["Manrope", "system-ui", "Georgia", "Arial", "Poppins", "Montserrat", "Playfair Display", "Space Grotesk"].includes(input.headlineFont) ? input.headlineFont : "Manrope",
     headlineSize: Number.isFinite(Number(input.headlineSize)) && Number(input.headlineSize) >= 24 && Number(input.headlineSize) <= 64 ? Number(input.headlineSize) : 48,
     headlineColor: /^#[0-9a-fA-F]{6}$/.test(String(input.headlineColor || "")) ? input.headlineColor : "#15172b",
     description,
+    videoUrl: approvedVideo,
     price,
     mrp: mrp || 0,
     currency: "INR",

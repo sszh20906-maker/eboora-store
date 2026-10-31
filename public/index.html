@@ -16,7 +16,7 @@ h1{font-size:1.6rem;margin:4px 0;letter-spacing:-.02em}
 .muted{color:var(--muted)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:22px}
 .item{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit}
-.item img{width:100%;aspect-ratio:4/3;object-fit:cover;background:#eef0fa}
+.item img{width:100%;aspect-ratio:16/9;object-fit:contain;background:#eef0fa}
 .body{padding:14px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
 .name{font-weight:800;font-size:1.05rem}
 .price{font-weight:800;color:var(--blue)}
@@ -43,6 +43,9 @@ header{padding:12px 0 25px}header h1{font-size:30px;letter-spacing:-1.6px}
 html{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 html.allow-select,html.allow-select *{-webkit-user-select:text;user-select:text}
 input,textarea{-webkit-user-select:text;user-select:text}
+
+/* V43 storefront polish */
+:root{color-scheme:light}button,a,input{touch-action:manipulation}img{max-width:100%}a:focus-visible,button:focus-visible{outline:3px solid #06b6d4;outline-offset:3px}
 </style>
 <link rel="stylesheet" href="/assets/eboora-premium.css?v=29">
 <link rel="stylesheet" href="/assets/eboora-v31.css?v=31">
