@@ -40,10 +40,14 @@ header{padding:12px 0 25px}header h1{font-size:30px;letter-spacing:-1.6px}
 .hero{min-height:365px;display:flex;align-items:center;border-radius:26px;background:radial-gradient(ellipse at 90% 5%,#1e60b6a9,transparent 47%),radial-gradient(ellipse at 70% 100%,#07366a,transparent 56%),#09182d}.hero:after{content:'✦';font-style:normal;font-size:clamp(130px,23vw,290px);color:#8eb9ff0d;top:0;right:7%}.hero-inner{position:relative;z-index:1}.hero h2{margin:14px 0 18px;font-size:clamp(42px,6vw,74px)}.hero p{max-width:590px}.hero-cta{display:inline-flex;align-items:center;gap:30px;background:#fff;color:#123267;border-radius:12px;margin-top:26px;padding:13px 20px;text-decoration:none;font-weight:850}.hero-cta span{font-size:20px}.section-heading{margin-top:50px}.grid{gap:20px}.item{overflow:hidden;border:1px solid #dfe8f6}.item img{aspect-ratio:1.35;object-fit:cover}.item .body{gap:9px}.item .name{font-size:19px;line-height:1.35}.item .cta{background:#eff5ff;color:#194dab;padding:10px 12px;border-radius:10px;text-align:center;margin-top:13px}.item:hover .cta{background:#1c5cda;color:#fff}.item:focus-visible,.hero-cta:focus-visible{outline:3px solid #f6bc48;outline-offset:4px}
 @media(max-width:600px){.hero{min-height:390px}.hero h2{font-size:clamp(40px,10vw,60px);letter-spacing:-1.8px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.item .body{padding:12px;gap:6px}.item .name{font-size:15px}.item .muted{font-size:12px}.item .cta{font-size:12px}.item img{aspect-ratio:1/1}.hero-tags{gap:5px}.hero-tags span{font-size:10px}.section-heading{font-size:21px}}
 @media(max-width:375px){.grid{grid-template-columns:1fr}.item img{aspect-ratio:1.5}}
+html{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html.allow-select,html.allow-select *{-webkit-user-select:text;user-select:text}
+input,textarea{-webkit-user-select:text;user-select:text}
 </style>
 <link rel="stylesheet" href="/assets/eboora-premium.css?v=29">
 <link rel="stylesheet" href="/assets/eboora-v31.css?v=31">
 <link rel="stylesheet" href="/assets/eboora-v33.css?v=33">
+<link rel="stylesheet" href="/assets/eboora-v34.css?v=34">
 </head>
 <body class="catalog-premium">
 <div class="wrap">
@@ -57,5 +61,6 @@ header{padding:12px 0 25px}header h1{font-size:30px;letter-spacing:-1.6px}
 <footer><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/refund.html">Refund policy</a></footer>
 </div>
 <script src="/catalog.js" defer></script>
+<script src="/guard.js" defer></script>
 </body>
 </html>

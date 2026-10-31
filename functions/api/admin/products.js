@@ -38,7 +38,7 @@ export async function onRequestPost({ request, env }) {
   const previous = await getProductById(env, id);
   const status = input.status === "draft" ? "draft" : "published";
   try {
-    await writeProduct(env, { id, slug, status, ...pickMedia(previous || {}), ...config });
+    await writeProduct(env, { id, slug, status, ...pickMedia(previous || {}), ...config, fontTheme: ["manrope", "poppins", "playfair", "space", "montserrat"].includes(input.fontTheme) ? input.fontTheme : "manrope" });
   } catch (error) {
     console.error("Product save failed", error);
     return json({ error: "Product could not be saved. Please try again." }, 503);

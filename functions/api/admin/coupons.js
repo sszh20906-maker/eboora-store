@@ -45,3 +45,18 @@ export async function onRequestPost({ request, env }) {
   }
   return json({ ok: true, code });
 }
+
+// DELETE /api/admin/coupons?code=... - permanently removes a discount code (owner only).
+export async function onRequestDelete({ request, env }) {
+  const denied = await requireAdmin(request, env);
+  if (denied) return denied;
+  const code = normalizeCode(new URL(request.url).searchParams.get("code"));
+  if (!COUPON_CODE_RE.test(code)) return json({ error: "Coupon code sahi nahi hai." }, 400);
+  try {
+    await env.ORDERS_DB.prepare("DELETE FROM coupons WHERE code = ?").bind(code).run();
+  } catch (error) {
+    console.error("Coupon delete failed", error);
+    return json({ error: "Coupon delete nahi hua. Phir se try karo." }, 503);
+  }
+  return json({ ok: true, code });
+}

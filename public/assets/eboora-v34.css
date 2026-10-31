@@ -1,0 +1,13 @@
+/* v34: cover fills its 16:9 frame, checkout dialog is readable, close button is visible */
+.item img,#coverImg{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b1424}
+#checkoutDialog{width:94vw;max-width:440px;border-radius:24px;border:1px solid #1d2d4f;padding:0;background:#0b1424;color:#fff;box-shadow:0 30px 80px rgba(0,0,0,.55)}
+#checkoutDialog::backdrop{background:rgba(3,8,18,.72)}
+#checkoutDialog .checkout-inner{padding:26px 22px 22px}
+#checkoutDialog h2{color:#fff;font-size:1.35rem;margin:0 0 6px}
+#checkoutDialog p,#checkoutDialog .mute{color:#9fb0cc}
+#checkoutDialog label{color:#dfe7f5;font-weight:600;font-size:.86rem}
+#checkoutDialog input{background:#101d36!important;color:#fff!important;border:1px solid #2a3d64!important;border-radius:14px!important;padding:13px 14px!important;font-size:16px!important}
+#checkoutDialog input::placeholder{color:#60739a}
+#checkoutDialog input:focus{outline:none;border-color:#4f8cff!important;box-shadow:0 0 0 3px rgba(79,140,255,.25)}
+#closeCheckout{width:44px;height:44px;min-width:44px;border-radius:14px;background:#fff;color:#0b1424;border:0;font-size:22px;font-weight:800;line-height:1;cursor:pointer;display:grid;place-items:center;box-shadow:0 6px 18px rgba(0,0,0,.35)}
+#closeCheckout:focus-visible{outline:3px solid #4f8cff;outline-offset:2px}

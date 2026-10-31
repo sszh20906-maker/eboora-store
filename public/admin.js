@@ -46,7 +46,8 @@ function readForm() {
     whatsapp: $('whatsapp').value,
     legal: $('legal').value,
     responseTime: $('responseTime').value,
-    pixelId: $('pixelId').value
+    pixelId: $('pixelId').value,
+    fontTheme: $('fontTheme').value
   };
 }
 
@@ -83,6 +84,7 @@ function fillForm(p) {
   $('legal').value = p.legal || '';
   $('responseTime').value = p.responseTime || '1 business day';
   $('pixelId').value = p.pixelId && p.pixelId !== 'YOUR_PIXEL_ID' ? p.pixelId : '';
+  $('fontTheme').value = p.fontTheme || 'manrope';
 }
 
 function setSaveMsg(text, cls) {
@@ -558,3 +560,37 @@ function updateThemePreview() {
 }
 ['theme','accentColor','useAccent','productName'].forEach(id => $(id)?.addEventListener('input', updateThemePreview));
 updateThemePreview();
+
+
+// v34: delete button on every coupon row (permanent)
+(function () {
+  const box = document.getElementById('couponList');
+  if (!box) return;
+  function decorate() {
+    box.querySelectorAll('.order').forEach(row => {
+      if (row.dataset.deleteReady) return;
+      const title = row.querySelector('strong');
+      if (!title) return;
+      row.dataset.deleteReady = '1';
+      const code = title.textContent.split(' · ')[0].trim();
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'btn light';
+      btn.textContent = 'Delete';
+      btn.style.marginTop = '8px';
+      btn.style.marginLeft = '8px';
+      btn.addEventListener('click', async () => {
+        if (!window.confirm('Coupon ' + code + ' permanently delete karein?')) return;
+        try {
+          await api('/api/admin/coupons?code=' + encodeURIComponent(code), { method: 'DELETE', body: '{}' });
+          if (typeof loadCoupons === 'function') loadCoupons();
+        } catch (err) {
+          alert('Delete nahi hua: ' + err.message);
+        }
+      });
+      row.appendChild(btn);
+    });
+  }
+  new MutationObserver(decorate).observe(box, { childList: true, subtree: true });
+  decorate();
+})();
