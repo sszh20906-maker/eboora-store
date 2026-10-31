@@ -50,6 +50,11 @@ export async function onRequestPost({ request, env }) {
   // Optional discount code, validated on the server.
   let amount = listPrice;
   let coupon = null;
+  // Block a second purchase of the same product with the same email once it is already paid.
+  if (env.ORDERS_DB) {
+    const alreadyPaid = await env.ORDERS_DB.prepare("SELECT order_id FROM orders WHERE customer_email = ? AND product_id = ? AND status = 'PAID' LIMIT 1").bind(customerEmail, product.id).first();
+    if (alreadyPaid) return json({ error: "Ye email se ye product already kharida ja chuka hai. Download link ke liye 'Lost your download link?' use karo." }, 409);
+  }
   const couponCode = normalizeCode(input.coupon_code);
   if (couponCode) {
     const quote = await quoteCoupon(env, couponCode, listPrice);
