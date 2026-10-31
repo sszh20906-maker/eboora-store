@@ -31,7 +31,9 @@ function done(d){
   try{ localStorage.setItem(key,"1"); }catch(_){}
 }
 const TEMP_STATUSES=["PAYMENT_STATUS_TEMPORARILY_UNAVAILABLE","TOO_MANY_REQUESTS","DELIVERY_NOT_READY"];
+const FAILED_STATUSES=["EXPIRED","TERMINATED","TERMINATION_REQUESTED","CANCELLED","FAILED"];
 const MAX_ATTEMPTS=20;
+const MAX_PENDING_ATTEMPTS=6;
 function retryLater(attempt){ return setTimeout(()=>check(attempt+1),3000); }
 async function check(attempt){
   view("wait","…","Confirming your payment…","Please keep this page open. This can take up to a minute.");
@@ -39,10 +41,14 @@ async function check(attempt){
     const r=await fetch("/api/verify-order?order_id="+encodeURIComponent(orderId),{cache:"no-store"});
     const d=await r.json().catch(()=>({}));
     if(d.paid) return done(d);
-    if(attempt<MAX_ATTEMPTS) return retryLater(attempt);
     if(!r.ok || TEMP_STATUSES.includes(d.status)){
-      return view("bad","!","Still confirming your payment","Your payment may still be processing. Reload this page in a minute, or check your email for the download link. Order ID: "+orderId);
+      if(attempt<MAX_ATTEMPTS) return retryLater(attempt);
+      return view("bad","!","Still confirming your payment","Reload this page in a minute, or check your email for the download link. Order ID: "+orderId);
     }
+    if(FAILED_STATUSES.includes(d.status)){
+      return view("bad","!","Payment not completed","This payment was not completed. If money was deducted, it will be confirmed or refunded by email. Otherwise please go back to the store and try again.");
+    }
+    if(attempt<MAX_PENDING_ATTEMPTS) return retryLater(attempt);
     view("bad","!","Payment not confirmed yet","If money was deducted, your link will arrive by email shortly. If not, write to us with your order ID: "+orderId);
   }catch(e){
     if(attempt<MAX_ATTEMPTS) return retryLater(attempt);
