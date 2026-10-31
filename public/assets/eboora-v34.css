@@ -1,5 +1,5 @@
 /* v34: cover fills its 16:9 frame, checkout dialog is readable, close button is visible */
-.item img,#coverImg{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b1424}
+.item img{width:100%;height:auto;aspect-ratio:16/9;object-fit:cover;display:block;background:#0b1424}
 #checkoutDialog{width:94vw;max-width:440px;border-radius:24px;border:1px solid #1d2d4f;padding:0;background:#0b1424;color:#fff;box-shadow:0 30px 80px rgba(0,0,0,.55)}
 #checkoutDialog::backdrop{background:rgba(3,8,18,.72)}
 #checkoutDialog .checkout-inner{padding:26px 22px 22px}
