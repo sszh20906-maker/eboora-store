@@ -15,7 +15,8 @@ export async function onRequestGet({ env }) {
       price: p.price,
       mrp: p.mrp || 0,
       currency: p.currency || "INR",
-      coverImage: coverUrl(p)
+      coverImage: coverUrl(p),
+      videoUrl: p.videoUrl || ""
     }))
   });
 }

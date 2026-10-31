@@ -11,7 +11,7 @@ const el = (tag, cls, text) => { const n = document.createElement(tag); if (cls)
 async function api(path, options = {}) {
   const r = await fetch(path, { ...options, cache: 'no-store', credentials: 'same-origin', headers: { 'Content-Type': 'application/json' } });
   const d = await r.json().catch(() => ({}));
-  if (!r.ok) { const err = new Error(d.error || ('Kuch galat hua (' + r.status + ')')); err.status = r.status; throw err; }
+  if (!r.ok) { const err = new Error(d.error || ('Request failed (' + r.status + ')')); err.status = r.status; throw err; }
   return d;
 }
 
@@ -32,6 +32,9 @@ function readForm() {
     headlineColor: $('headlineColor').value,
     description: $('description').value,
     videoUrl: $('videoUrl').value.trim(),
+    descriptionFont: $('descriptionFont').value,
+    descriptionSize: Number($('descriptionSize').value),
+    descriptionColor: $('descriptionColor').value,
     price: $('price').value,
     mrp: $('mrp').value,
     coverImage: $('coverImage').value,
@@ -68,6 +71,9 @@ function fillForm(p) {
   $('headlineColor').value = /^#[0-9a-fA-F]{6}$/.test(p.headlineColor || '') ? p.headlineColor : '#15172b';
   $('description').value = p.description || '';
   $('videoUrl').value = p.videoUrl || '';
+  $('descriptionFont').value = p.descriptionFont || 'system-ui';
+  $('descriptionSize').value = p.descriptionSize || 17;
+  $('descriptionColor').value = /^#[0-9a-fA-F]{6}$/.test(p.descriptionColor || '') ? p.descriptionColor : '#475569';
   $('price').value = p.price || '';
   $('mrp').value = p.mrp || '';
   $('coverImage').value = p.coverImage || '/assets/cover.svg';
@@ -142,14 +148,14 @@ function localTime(utc) {
 function followUpMessage(o) {
   const first = (o.customer_name || '').split(' ')[0] || 'Namaste';
   const product = storeProductName || 'hamara product';
-  return 'Namaste ' + first + ', aapne ' + product + ' ka order shuru kiya tha, lekin payment complete nahi hua. Agar koi dikkat aayi ho to batayiye, main madad kar deta hoon. Dobara order karne ke liye yahan dekhiye: ' + location.origin + '/';
+  return 'Hello ' + first + ', you started an order for ' + product + ' but did not complete checkout. If you need assistance, reply to this message. View our store: ' + location.origin + '/';
 }
 
 function orderCard(o) {
   const card = el('div', 'order');
   const badgeClass = o.status === 'PAID' ? 'badge b-paid' : (o.status === 'CREATED' ? 'badge b-open' : 'badge b-other');
   const head = el('div', 'order-head');
-  head.append(el('strong', '', o.customer_name || 'Naam nahi'), el('span', badgeClass, STATUS_LABEL[o.status] || o.status));
+  head.append(el('strong', '', o.customer_name || 'Name unavailable'), el('span', badgeClass, STATUS_LABEL[o.status] || o.status));
   card.append(head);
   card.append(el('div', 'muted', money(o.amount) + ' · ' + localTime(o.created_at)));
   card.append(el('div', 'muted', 'Phone: ' + (o.customer_phone || '-') + ' · Email: ' + (o.customer_email || '-')));
@@ -160,14 +166,14 @@ function orderCard(o) {
     actions.style.marginTop = '8px';
     const msg = followUpMessage(o);
     if (o.customer_phone) {
-      const wa = el('a', 'btn wa', 'WhatsApp karo');
+      const wa = el('a', 'btn wa', 'WhatsApp');
       wa.href = 'https://wa.me/91' + o.customer_phone + '?text=' + encodeURIComponent(msg);
       wa.target = '_blank';
       wa.rel = 'noopener';
       actions.append(wa);
     }
     if (o.customer_email) {
-      const mail = el('a', 'btn light', 'Email karo');
+      const mail = el('a', 'btn light', 'Email');
       mail.href = 'mailto:' + o.customer_email + '?subject=' + encodeURIComponent('Aapka order - ' + storeProductName) + '&body=' + encodeURIComponent(msg);
       actions.append(mail);
     }
@@ -175,18 +181,19 @@ function orderCard(o) {
   }
   if (o.refunded) card.append(el('div', 'muted', 'Refunded: ' + money(o.refunded)));
   if (o.status === 'PAID') {
-    const refundBtn = el('button', 'btn light', 'Refund record karo');
+    const refundBtn = el('button', 'btn light', 'Record refund');
     refundBtn.type = 'button';
     refundBtn.style.marginTop = '8px';
     refundBtn.addEventListener('click', () => recordRefund(o));
     card.append(refundBtn);
   }
-  if (['CREATED','FAILED','CANCELLED'].includes(o.status)) {
+  if (true) {
     const actions = el('div', 'order-actions');
+    const select = el('input'); select.type='checkbox'; select.className='order-check'; select.value=o.order_id; select.setAttribute('aria-label','Select order '+o.order_id); actions.append(select);
     const remove = el('button', 'btn danger-action', 'Delete order');
     remove.type = 'button';
     remove.addEventListener('click', async () => {
-      if (!confirm('Permanently delete this unpaid order and its contact details? This cannot be undone.')) return;
+      if (!confirm('Permanently delete this order? Paid buyers may lose download access. Payment receipts and a minimal financial audit will be retained. This cannot be undone.')) return;
       remove.disabled = true;
       try { await api('/api/admin/orders', { method:'POST', body: JSON.stringify({ action:'delete', order_id:o.order_id }) }); await loadOrders(); }
       catch (err) { $('ordersMsg').textContent = err.message; remove.disabled = false; }
@@ -203,30 +210,31 @@ function renderToday(t) {
 
 async function recordRefund(o) {
   const left = Number(o.amount) - Number(o.refunded || 0);
-  const amountText = prompt('Kitna refund kiya? (max Rs ' + left + ')', String(left));
+  const amountText = prompt('Refund amount (maximum ₹' + left + ')', String(left));
   if (amountText === null) return;
-  const note = prompt('Note (optional, jaise "customer request")', '') || '';
+  const note = prompt('Refund note (optional)', '') || '';
   try {
     await api('/api/admin/refunds', { method: 'POST', body: JSON.stringify({ order_id: o.order_id, amount: Number(amountText), note }) });
     await loadOrders();
-    $('ordersMsg').textContent = 'Refund record ho gaya. Paise Cashfree dashboard se bhi wapas karne honge.';
+    $('ordersMsg').textContent = 'Refund recorded. Process the actual refund separately in Cashfree.';
   } catch (err) {
-    $('ordersMsg').textContent = 'Refund record nahi hua: ' + err.message;
+    $('ordersMsg').textContent = 'Refund could not be recorded: ' + err.message;
   }
 }
 
 async function loadOrders() {
-  $('ordersMsg').textContent = 'Orders load ho rahe hain...';
+  $('ordersMsg').textContent = 'Loading orders…';
   try {
     const d = await api('/api/admin/orders?status=' + encodeURIComponent($('statusFilter').value));
     renderSummary(d.summary || {});
     renderToday(d.today || { count: 0, total: 0 });
     drawOverview(d);
     const list = d.orders || [];
+    const selection = $('bulkDeleteBtn'); if (selection) selection.disabled = !list.length;
     $('orderList').replaceChildren(...list.map(orderCard));
-    $('ordersMsg').textContent = list.length ? '' : 'Is filter mein koi order nahi hai.';
+    $('ordersMsg').textContent = list.length ? '' : 'No orders match this filter.';
   } catch (err) {
-    $('ordersMsg').textContent = 'Orders load nahi hue: ' + err.message;
+    $('ordersMsg').textContent = 'Unable to load orders: ' + err.message;
   }
 }
 
@@ -241,7 +249,7 @@ $('loginForm').addEventListener('submit', async e => {
       body: JSON.stringify({ email: $('loginEmail').value.trim(), password: $('loginPassword').value })
     });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) { showLoginError(d.error || 'Login nahi hua.'); return; }
+    if (!r.ok) { showLoginError(d.error || 'Unable to log in.'); return; }
     $('loginPassword').value = '';
     openAdmin();
   } catch (err) {
@@ -251,11 +259,19 @@ $('loginForm').addEventListener('submit', async e => {
 
 $('statusFilter').addEventListener('change', loadOrders);
 $('refreshBtn').addEventListener('click', loadOrders);
+$('bulkDeleteBtn').addEventListener('click', async () => {
+  const ids = [...document.querySelectorAll('#orderList .order-check:checked')].map(x => x.value);
+  if (!ids.length) { $('ordersMsg').textContent = 'Select orders first.'; return; }
+  if (!confirm(`Permanently delete ${ids.length} orders? Paid buyers may lose download access. Financial audit data remains. This cannot be undone.`)) return;
+  const btn = $('bulkDeleteBtn'); btn.disabled = true;
+  try { await api('/api/admin/orders', { method:'POST',body:JSON.stringify({action:'bulk_delete',order_ids:ids}) }); await loadOrders(); }
+  catch(e) { $('ordersMsg').textContent=e.message; } finally { btn.disabled=false; }
+});
 $('exportOrdersBtn').addEventListener('click', async () => {
   const button = $('exportOrdersBtn'); button.disabled = true;
   try {
     const selected = $('statusFilter').value;
-    const status = selected === 'PAID' ? 'ALL' : selected;
+    const status = selected;
     const response = await fetch('/api/admin/orders', { method:'PUT', credentials:'same-origin', cache:'no-store', headers:{'Content-Type':'application/json'}, body:JSON.stringify({status}) });
     if (!response.ok) throw new Error((await response.json().catch(()=>({}))).error || 'Export failed');
     const blob = await response.blob(); const url = URL.createObjectURL(blob);
@@ -275,7 +291,7 @@ $('logoutBtn').addEventListener('click', async () => {
 $('settingsForm').addEventListener('submit', async e => {
   e.preventDefault();
   $('saveBtn').disabled = true;
-  setSaveMsg('Save ho raha hai...', '');
+  setSaveMsg('Saving changes…', '');
   try {
     const d = await api('/api/admin/products', { method: 'POST', body: JSON.stringify(readForm()) });
     currentProduct = d.product;
@@ -284,7 +300,7 @@ $('settingsForm').addEventListener('submit', async e => {
     $('mediaArea').classList.remove('hidden');
     $('mediaNote').classList.add('hidden');
     renderMedia(d.product);
-    setSaveMsg('Save ho gaya. Link: ' + location.origin + '/landing.html?slug=' + d.product.slug, 'ok');
+    setSaveMsg('Saved successfully. Product link: ' + location.origin + '/landing.html?slug=' + d.product.slug, 'ok');
     loadProducts();
   } catch (err) {
     setSaveMsg(err.message, 'bad');
@@ -313,9 +329,9 @@ async function loadCoupons() {
     const list = d.coupons || [];
     const box = $('couponList');
     box.replaceChildren(...list.map(couponRow));
-    if (!list.length) box.append(el('p', 'muted', 'Abhi koi coupon nahi hai.'));
+    if (!list.length) box.append(el('p', 'muted', 'No coupons yet.'));
   } catch (err) {
-    setCouponMsg('Coupons load nahi hue: ' + err.message, 'bad');
+    setCouponMsg('Unable to load coupons: ' + err.message, 'bad');
   }
 }
 
@@ -327,7 +343,7 @@ function couponRow(c) {
   row.append(head);
   const used = c.max_uses ? c.used_count + ' / ' + c.max_uses + ' used' : c.used_count + ' used';
   row.append(el('div', 'muted', used + (c.expires_at ? ' · expires ' + c.expires_at : ' · no expiry')));
-  const toggle = el('button', 'btn light', c.active ? 'Band karo' : 'Chalu karo');
+  const toggle = el('button', 'btn light', c.active ? 'Disable' : 'Enable');
   toggle.type = 'button';
   toggle.style.marginTop = '8px';
   toggle.addEventListener('click', () => saveCoupon({ code: c.code, type: c.type, value: c.value, max_uses: c.max_uses, expires_at: c.expires_at, active: !c.active }));
@@ -338,7 +354,7 @@ function couponRow(c) {
 async function saveCoupon(body) {
   try {
     await api('/api/admin/coupons', { method: 'POST', body: JSON.stringify(body) });
-    setCouponMsg('Coupon save ho gaya.', 'ok');
+    setCouponMsg('Coupon saved.', 'ok');
     loadCoupons();
   } catch (err) {
     setCouponMsg(err.message, 'bad');
@@ -363,14 +379,14 @@ function renderProducts(list) {
   const box = $('productList');
   box.replaceChildren();
   if (!list.length) {
-    box.append(el('p', 'muted', 'Abhi koi product nahi hai. "Naya product" dabao.'));
+    box.append(el('p', 'muted', 'No products yet. Select New product to create one.'));
     return;
   }
   list.forEach(p => {
     const row = el('div', 'order');
     const head = el('div', 'order-head');
     const label = p.status === 'published' ? 'Live' : (p.status === 'draft' ? 'Draft' : 'Hidden');
-    head.append(el('strong', '', p.productName || 'Bina naam'), el('span', p.status === 'published' ? 'badge b-paid' : 'badge b-other', label));
+    head.append(el('strong', '', p.productName || 'Untitled product'), el('span', p.status === 'published' ? 'badge b-paid' : 'badge b-other', label));
     const thumbnail = el('img', 'product-thumb');
     thumbnail.src = p.coverUrl || p.coverImage || '/assets/cover.svg';
     thumbnail.alt = ''; thumbnail.loading = 'lazy';
@@ -380,7 +396,7 @@ function renderProducts(list) {
     row.append(el('div', 'muted', money(p.price) + '  ·  ' + location.origin + '/landing.html?slug=' + p.slug));
     const actions = el('div', 'row');
     actions.style.marginTop = '8px';
-    const copy = el('button', 'btn light', 'Link copy karo');
+    const copy = el('button', 'btn light', 'Copy link');
     copy.type = 'button';
     copy.addEventListener('click', () => copyLink(p.slug));
     const open = el('a', 'btn light', 'Dekho');
@@ -404,13 +420,13 @@ async function loadProducts() {
     const d = await api('/api/admin/products');
     renderProducts(d.products || []);
   } catch (err) {
-    setListMsg('Products load nahi hue: ' + err.message, 'bad');
+    setListMsg('Unable to load products: ' + err.message, 'bad');
   }
 }
 
 function openEditor(p) {
   fillForm(p || null);
-  $('editorTitle').textContent = p ? 'Product edit karo' : 'Naya product';
+  $('editorTitle').textContent = p ? 'Edit product' : 'New product';
   $('editorCard').classList.remove('hidden');
   $('mediaArea').classList.remove('hidden');
   $('mediaNote').classList.toggle('hidden', Boolean(p));
@@ -429,20 +445,20 @@ async function copyLink(slug) {
   const url = location.origin + '/landing.html?slug=' + slug;
   try {
     await navigator.clipboard.writeText(url);
-    setListMsg('Link copy ho gaya: ' + url, 'ok');
+    setListMsg('Product link copied: ' + url, 'ok');
   } catch (err) {
-    window.prompt('Ye link copy karo:', url);
+    window.prompt('Copy this link:', url);
   }
 }
 
 async function deleteProduct(p) {
-  if (!window.confirm('"' + (p.productName || p.slug) + '" delete karein? Existing buyers honge to pehle archive hoga.')) return;
-  const permanent = window.confirm('PERMANENT DELETE bhi karna hai? OK = D1 product permanently remove; purane buyers ke download links BREAK ho sakte hain. Cancel = safe archive.');
+  if (!window.confirm('"' + (p.productName || p.slug) + '" delete? Existing purchases will be protected by archiving when required.')) return;
+  const permanent = window.confirm('Permanently delete the product? Existing purchase download links could stop working. Cancel to archive instead.');
   if (permanent && window.prompt('Permanent deletion confirm karne ke liye DELETE likho:') !== 'DELETE') return;
   try {
     const d = await api('/api/admin/products?id=' + encodeURIComponent(p.id) + (permanent ? '&force=PERMANENT_DELETE' : ''), { method: 'DELETE', body: '{}' });
     if (currentProduct && currentProduct.id === p.id) closeEditor();
-    setListMsg(d.archived ? d.message : 'Product D1 se permanently delete ho gaya.', 'ok');
+    setListMsg(d.archived ? d.message : 'Product permanently deleted.', 'ok');
     loadProducts();
   } catch (err) {
     setListMsg(err.message, 'bad');
@@ -468,9 +484,9 @@ function renderMedia(p) {
 
 async function uploadMedia(kind) {
   const selected = $(kind === 'cover' ? 'coverInput' : 'fileInput');
-  if (!selected.files?.length) { setMediaStatus('Pehle file select karo.', 'bad'); return; }
+  if (!selected.files?.length) { setMediaStatus('Select a file first.', 'bad'); return; }
   if (!currentProduct) {
-    if (!$('settingsForm').reportValidity()) { setMediaStatus('Required product details fill karo.', 'bad'); return; }
+    if (!$('settingsForm').reportValidity()) { setMediaStatus('Complete required product details first.', 'bad'); return; }
     setMediaStatus('First product is being saved automatically...', '');
     try {
       const d = await api('/api/admin/products', { method: 'POST', body: JSON.stringify(readForm()) });
@@ -482,10 +498,10 @@ async function uploadMedia(kind) {
   }
   const input = $(kind === 'cover' ? 'coverInput' : 'fileInput');
   const file = input.files && input.files[0];
-  if (!file) { setMediaStatus('Pehle file select karo.', 'bad'); return; }
+  if (!file) { setMediaStatus('Select a file first.', 'bad'); return; }
   const ext = (file.name.split('.').pop() || '').toLowerCase();
   const type = file.type || TYPE_BY_EXT[ext] || 'application/octet-stream';
-  setMediaStatus('Upload ho raha hai... badi file mein kuch minute lag sakte hain.', '');
+  setMediaStatus('Uploading file… Large files may take longer.', '');
   try {
     const r = await fetch('/api/admin/upload?kind=' + kind + '&id=' + encodeURIComponent(currentProduct.id), {
       method: 'POST',
@@ -494,11 +510,11 @@ async function uploadMedia(kind) {
       body: file
     });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(d.error || 'Upload nahi hua.');
+    if (!r.ok) throw new Error(d.error || 'Upload failed.');
     input.value = '';
     currentProduct = d.product;
     renderMedia(d.product);
-    setMediaStatus('Upload ho gaya.', 'ok');
+    setMediaStatus('Upload completed.', 'ok');
     loadProducts();
   } catch (err) {
     setMediaStatus(err.message, 'bad');
@@ -507,7 +523,7 @@ async function uploadMedia(kind) {
 
 async function removeMedia(kind) {
   if (!currentProduct) return;
-  if (!window.confirm(kind === 'cover' ? 'Cover hata dein?' : 'Product file hata dein? Naya file upload karne tak buyers ko download nahi milega.')) return;
+  if (!window.confirm(kind === 'cover' ? 'Remove this cover image?' : 'Remove this digital file? Customers will lose download access until a replacement is uploaded.')) return;
   try {
     const r = await fetch('/api/admin/upload?kind=' + kind + '&id=' + encodeURIComponent(currentProduct.id), {
       method: 'DELETE',
@@ -516,7 +532,7 @@ async function removeMedia(kind) {
       body: '{}'
     });
     const d = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(d.error || 'Hata nahi hua.');
+    if (!r.ok) throw new Error(d.error || 'Unable to remove this file.');
     currentProduct = d.product;
     renderMedia(d.product);
     setMediaStatus('Hata diya gaya.', 'ok');
@@ -536,7 +552,7 @@ function setTab(tab) {
   document.querySelectorAll('[data-panel]').forEach(node => node.classList.toggle('hidden', node.dataset.panel !== tab));
   document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab || (tab === 'editor' && btn.dataset.tab === 'products')));
   if (tab === 'editor') $('editorCard').classList.remove('hidden');
-  const title = $('workspaceTitle'); if (title) title.textContent = ({overview:'Overview',orders:'Orders',products:'Products',coupons:'Coupons',editor:'Product studio'})[tab] || 'Overview';
+  const title = $('workspaceTitle'); if (title) title.textContent = ({overview:'Overview',orders:'Orders',products:'Products',coupons:'Coupons',editor:'Product studio',storefront:'Storefront studio'})[tab] || 'Overview';
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => setTab(btn.dataset.tab)));
@@ -546,17 +562,17 @@ $('previewBtn').addEventListener('click', async () => {
   const cover = $('coverInput').files?.[0];
   if (cover) {
     if (!['image/jpeg','image/png','image/webp'].includes(cover.type) || cover.size > 2 * 1024 * 1024) {
-      setSaveMsg('Preview cover JPG/PNG/WebP aur 2 MB se chhota hona chahiye.', 'bad'); return;
+      setSaveMsg('Preview cover must be JPG, PNG or WebP under 2 MB.', 'bad'); return;
     }
     try {
       config.coverImage = await new Promise((resolve, reject) => {
         const reader = new FileReader(); reader.onload = () => resolve(reader.result);
         reader.onerror = reject; reader.readAsDataURL(cover);
       });
-    } catch { setSaveMsg('Cover preview load nahi hua.', 'bad'); return; }
+    } catch { setSaveMsg('Unable to load cover preview.', 'bad'); return; }
   }
   try { localStorage.setItem('eboora-preview-config', JSON.stringify(config)); }
-  catch { setSaveMsg('Preview storage full hai. Chhota cover try karo.', 'bad'); return; }
+  catch { setSaveMsg('Preview storage is full. Try a smaller image.', 'bad'); return; }
   window.open('/landing.html?preview=1', '_blank', 'noopener');
 });
 function drawOverview(d) {
@@ -607,12 +623,12 @@ updateThemePreview();
       btn.style.marginTop = '8px';
       btn.style.marginLeft = '8px';
       btn.addEventListener('click', async () => {
-        if (!window.confirm('Coupon ' + code + ' permanently delete karein?')) return;
+        if (!window.confirm('Coupon ' + code + ' permanently delete?')) return;
         try {
           await api('/api/admin/coupons?code=' + encodeURIComponent(code), { method: 'DELETE', body: '{}' });
           if (typeof loadCoupons === 'function') loadCoupons();
         } catch (err) {
-          alert('Delete nahi hua: ' + err.message);
+          alert('Unable to delete: ' + err.message);
         }
       });
       row.appendChild(btn);
@@ -621,3 +637,16 @@ updateThemePreview();
   new MutationObserver(decorate).observe(box, { childList: true, subtree: true });
   decorate();
 })();
+
+// Standalone homepage video editor; never stores video bytes in D1.
+async function loadStorefrontVideo(){
+  try { const d=await api('/api/admin/storefront'); $('homeVideoUrl').value=d.videoUrl||''; }
+  catch(err){ $('storefrontMsg').textContent=err.message; }
+}
+$('storefrontForm').addEventListener('submit',async e=>{
+  e.preventDefault(); const btn=e.target.querySelector('button[type=submit]'); btn.disabled=true;
+  try { await api('/api/admin/storefront',{method:'PUT',body:JSON.stringify({videoUrl:$('homeVideoUrl').value.trim()})}); $('storefrontMsg').textContent='Storefront video saved.'; }
+  catch(err){ $('storefrontMsg').textContent=err.message; }
+  finally {btn.disabled=false;}
+});
+loadStorefrontVideo();

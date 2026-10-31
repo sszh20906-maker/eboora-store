@@ -12,8 +12,27 @@ function el(tag, cls, text) {
     const r = await fetch('/api/catalog', { cache: 'no-store' });
     const d = await r.json();
     const items = d.products || [];
-    if (!items.length) { empty.classList.remove('hidden'); return; }
-    items.forEach((p) => {
+    if (!items.length) empty.classList.remove('hidden');
+    // Home video is managed independently of individual product videos.
+    fetch('/api/storefront', {cache:'no-store'}).then(r => r.json()).then(({videoId}) => {
+      if (!/^[A-Za-z0-9_-]{11}$/.test(videoId || '')) return;
+      document.getElementById('storeVideo').classList.remove('hidden');
+      document.getElementById('storeVideoPlay').addEventListener('click', () => {
+        const iframe=document.createElement('iframe');
+        iframe.src='https://www.youtube-nocookie.com/embed/'+videoId+'?autoplay=1';
+        iframe.title='Eboora product overview'; iframe.allow='autoplay; encrypted-media; picture-in-picture';
+        iframe.allowFullscreen=true; iframe.loading='lazy'; iframe.referrerPolicy='strict-origin-when-cross-origin';
+        document.getElementById('storeVideoStage').replaceChildren(iframe);
+      },{once:true});
+    }).catch(()=>{});
+    const renderCatalog=(query='',sort='featured')=>{
+      list.replaceChildren();
+      const selected=items.filter(p=>(p.name+' '+(p.headline||'')+' '+(p.eyebrow||'')).toLowerCase().includes(query.toLowerCase()));
+      if(sort==='low')selected.sort((a,b)=>Number(a.price)-Number(b.price));
+      if(sort==='high')selected.sort((a,b)=>Number(b.price)-Number(a.price));
+      if(sort==='az')selected.sort((a,b)=>String(a.name).localeCompare(String(b.name)));
+      document.getElementById('searchEmpty').classList.toggle('hidden',Boolean(selected.length)||!items.length);
+      selected.forEach((p) => {
       const card = el('a', 'item');
       card.href = '/landing.html?slug=' + encodeURIComponent(p.slug);
       const img = el('img');
@@ -32,7 +51,12 @@ function el(tag, cls, text) {
       if(!window.matchMedia('(max-width: 760px)').matches) body.append(quick);card.dataset.productTheme=p.theme||'tech';if(/^#[0-9a-fA-F]{6}$/.test(p.accentColor||''))card.style.setProperty('--product-accent',p.accentColor);
       card.append(img, body);
       list.append(card);
-    });
+      });
+    };
+    const query=document.getElementById('catalogSearch'); const sort=document.getElementById('catalogSort');
+    query.addEventListener('input',()=>renderCatalog(query.value,sort.value));
+    sort.addEventListener('change',()=>renderCatalog(query.value,sort.value));
+    renderCatalog();
   } catch (err) {
     empty.classList.remove('hidden');
   }

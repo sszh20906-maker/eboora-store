@@ -50,15 +50,15 @@ export function validateConfig(input) {
   const coverRaw = clean(input.coverImage, 300);
   const coverImage = coverRaw.startsWith("/") || coverRaw.startsWith("https://") ? coverRaw : "/assets/cover.svg";
 
-  if (input.deliveryUrl && !validateDriveUrl(input.deliveryUrl)) errors.push("Sirf valid Google Drive sharing link use karo.");
-  if (!productName) errors.push("Product name zaroori hai.");
-  if (!headline) errors.push("Headline zaroori hai.");
-  if (!description) errors.push("Description zaroori hai.");
-  if (price === null) errors.push("Price 1 se 10,00,000 ke beech hona chahiye.");
-  if (mrpInput > 0 && mrp === null) errors.push("Original price galat hai.");
-  if (mrp && price !== null && mrp <= price) errors.push("Original price selling price se zyada honi chahiye, ya khali chhod do.");
-  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(email)) errors.push("Support email sahi nahi hai.");
-  if (whatsapp && (whatsapp.length < 10 || whatsapp.length > 15)) errors.push("WhatsApp number country code ke saath 10 se 15 digits ka hona chahiye, ya khali chhod do.");
+  if (input.deliveryUrl && !validateDriveUrl(input.deliveryUrl)) errors.push("Enter a valid Google Drive sharing link.");
+  if (!productName) errors.push("Product name is required.");
+  if (!headline) errors.push("Headline is required.");
+  if (!description) errors.push("Description is required.");
+  if (price === null) errors.push("Price must be between ₹1 and ₹10,00,000.");
+  if (mrpInput > 0 && mrp === null) errors.push("Original price is invalid.");
+  if (mrp && price !== null && mrp <= price) errors.push("Original price must exceed the selling price or be left blank.");
+  if (!/^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/.test(email)) errors.push("Enter a valid support email.");
+  if (whatsapp && (whatsapp.length < 10 || whatsapp.length > 15)) errors.push("WhatsApp must contain 10–15 digits including country code, or be left blank.");
   if (errors.length) return { errors, config: null };
 
   const benefits = (Array.isArray(input.benefits) ? input.benefits : [])
@@ -99,6 +99,9 @@ export function validateConfig(input) {
     headlineColor: /^#[0-9a-fA-F]{6}$/.test(String(input.headlineColor || "")) ? input.headlineColor : "#15172b",
     description,
     videoUrl: approvedVideo,
+    descriptionFont: ['system-ui','Arial','Georgia','Manrope','Poppins','Montserrat','Space Grotesk'].includes(input.descriptionFont) ? input.descriptionFont : 'system-ui',
+    descriptionSize: Number(input.descriptionSize) >= 13 && Number(input.descriptionSize) <= 24 ? Number(input.descriptionSize) : 17,
+    descriptionColor: /^#[0-9a-fA-F]{6}$/.test(String(input.descriptionColor || '')) ? input.descriptionColor : '#475569',
     price,
     mrp: mrp || 0,
     currency: "INR",

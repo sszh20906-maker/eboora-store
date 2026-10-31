@@ -52,17 +52,20 @@ input,textarea{-webkit-user-select:text;user-select:text}
 <link rel="stylesheet" href="/assets/eboora-v33.css?v=33">
 <link rel="stylesheet" href="/assets/eboora-v34.css?v=34">
 <link rel="stylesheet" href="/assets/eboora-v37.css?v=37">
+<link rel="stylesheet" href="/assets/eboora-v44.css?v=44"><link rel="stylesheet" href="/assets/eboora-v45.css?v=45">
 </head>
 <body class="catalog-premium">
 <div class="wrap">
+<div class="store-announcement"><span class="pulse-dot"></span> DIGITAL GOODS · BUILT FOR WHAT’S NEXT <span class="announcement-right">Secure checkout / Instant access after verification</span></div>
 <header>
   <div class="brand-stack"><div class="muted" style="font-size:.9rem">EBOORA / DIGITAL MARKETPLACE</div><h1><img class="brand-icon" src="/assets/brand-emblem.png" alt="" width="43" height="43"> eboora<span style="color:#2169ed">.</span></h1></div>
-  <a href="/resend.html">Lost download link?</a>
+  <nav class="store-nav" aria-label="Primary navigation"><a href="#list">Shop products</a><a href="#storeVideo">Watch overview</a><a href="/resend.html">Find my order</a></nav>
 </header>
-<div class="hero"><div class="hero-inner"><span class="eyebrow">CURATED DIGITAL ESSENTIALS</span><h2>Tools for a<br><em>better tomorrow.</em></h2><p>Discover thoughtfully made digital products for your next big step. Clear details, simple checkout and digital access after confirmed payment.</p><div class="hero-tags"><span>✓ Secure checkout</span><span>✓ Digital delivery</span><span>✓ Email support</span></div><a class="hero-cta" href="#list">Explore products <span aria-hidden="true">↗</span></a></div></div><h2 class="section-heading">Explore our collection <span>↗</span></h2>
-<div id="list" class="grid"></div>
-<div id="empty" class="empty hidden"><strong>Abhi koi product available nahi hai.</strong><p class="muted">Jaldi wapas dekhiye.</p></div>
-<footer><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/refund.html">Refund policy</a></footer>
+<div class="hero"><div class="hero-inner"><span class="eyebrow">CURATED DIGITAL ESSENTIALS</span><h2>Small download.<br><em>Big possibilities.</em></h2><p>Discover thoughtfully made digital products for your next big step. Clear details, simple checkout and digital access after confirmed payment.</p><div class="hero-tags"><span>✓ Secure checkout</span><span>✓ Digital delivery</span><span>✓ Email support</span></div><a class="hero-cta" href="#list">Explore products <span aria-hidden="true">↗</span></a></div></div><div class="store-intro"><span class="store-kicker">THE EBOORA EDIT</span><h2 class="section-heading">Made to move you <span>forward.</span></h2><p>Explore digital resources designed to be useful from day one. Choose your next upgrade.</p><div class="store-controls"><label class="catalog-search">⌕ <input id="catalogSearch" type="search" placeholder="Search digital products" aria-label="Search digital products"></label><select id="catalogSort" aria-label="Sort products"><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="az">Name: A–Z</option></select></div></div>
+<div id="list" class="grid" aria-live="polite"></div><p id="searchEmpty" class="empty hidden">No products match your search.</p>
+<section id="storeVideo" class="store-video hidden" aria-label="Product walkthrough"><div class="store-video-header"><div><span class="store-kicker">DISCOVER MORE</span><h2>See what you can create.</h2><p>Take a closer look before you buy.</p></div></div><div class="store-video-stage" id="storeVideoStage"><button type="button" id="storeVideoPlay" aria-label="Play product overview">▶ &nbsp; Watch the overview</button></div></section>
+<section class="store-promises" aria-label="Shopping advantages"><div><span>01 / CHOOSE</span><strong>Find your next essential.</strong><p>Clear product information and prices in INR.</p></div><div><span>02 / CHECK OUT</span><strong>Pay with confidence.</strong><p>Payments are processed securely by Cashfree.</p></div><div><span>03 / ACCESS</span><strong>Get to work.</strong><p>Download access follows successful payment verification.</p></div></section><div id="empty" class="empty hidden"><strong>Something good is coming.</strong><p class="muted">New digital products will appear here soon.</p></div>
+<footer><strong>EBOORA <span class="cyan">/ DIGITAL STORE</span></strong><div><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/refund.html">Refunds</a><a href="/resend.html">Order help</a></div><small>Digital products. Delivered with intention.</small></footer>
 </div>
 <script src="/catalog.js" defer></script>
 <script src="/guard.js" defer></script>

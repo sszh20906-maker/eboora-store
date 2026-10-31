@@ -69,11 +69,12 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
 <link rel="stylesheet" href="/assets/eboora-premium.css?v=29">
 <link rel="stylesheet" href="/assets/eboora-v31.css?v=31">
 <link rel="stylesheet" href="/assets/eboora-v33.css?v=33">
+<link rel="stylesheet" href="/assets/eboora-v44.css?v=44"><link rel="stylesheet" href="/assets/eboora-v45.css?v=45">
 </head>
 <body class="admin-premium">
 <div class="wrap">
   <h1>Store admin</h1>
-  <p class="muted">Orders aur product settings yahin se manage karo. Save karte hi storefront par changes dikhte hain.</p>
+  <p class="muted">Manage your products, orders, and storefront from one secure workspace.</p>
 
   <section id="loginCard" class="card">
     <h2>Owner login</h2>
@@ -87,9 +88,9 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
 
   <div id="app" class="hidden">
     <div class="admin-shell"><aside class="sidebar"><div class="side-brand"><span class="mark mark-logo"><img src="/assets/brand-emblem.png" alt="" width="39" height="39"></span><div><strong>eboora</strong><small>Creator commerce</small></div></div><nav class="nav">
-    <button class="nav-btn active" type="button" data-tab="overview">◫ &nbsp; Overview</button><button class="nav-btn" type="button" data-tab="orders">▤ &nbsp; Orders</button><button class="nav-btn" type="button" data-tab="products">▦ &nbsp; Products</button><button class="nav-btn" type="button" data-tab="coupons">◇ &nbsp; Coupons</button></nav><div class="side-foot">Store controls · Secure workspace</div></aside><main class="workspace">
+    <button class="nav-btn active" type="button" data-tab="overview">◫ &nbsp; Overview</button><button class="nav-btn" type="button" data-tab="orders">▤ &nbsp; Orders</button><button class="nav-btn" type="button" data-tab="products">▦ &nbsp; Products</button><button class="nav-btn" type="button" data-tab="coupons">◇ &nbsp; Coupons</button><button class="nav-btn" type="button" data-tab="storefront">◈ &nbsp; Storefront</button></nav><div class="side-foot">Store controls · Secure workspace</div></aside><main class="workspace">
     <div class="row workspace-top" style="justify-content:space-between">
-      <div class="workspace-heading"><small>OWNER WORKSPACE / EBOORA</small><strong id="workspaceTitle">Overview</strong></div><a class="btn light" href="/" target="_blank" rel="noopener">Storefront dekho</a>
+      <div class="workspace-heading"><small>OWNER WORKSPACE / EBOORA</small><strong id="workspaceTitle">Overview</strong></div><a class="btn light" href="/" target="_blank" rel="noopener">View storefront</a>
       <button class="btn light" id="logoutBtn" type="button">Logout</button>
     </div>
 
@@ -100,33 +101,38 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
       <h2>Orders</h2>
       <div class="stats">
         <div class="stat"><span class="muted">Paid</span><b id="paidCount">0</b><span class="muted" id="paidTotal"></span></div>
-        <div class="stat"><span class="muted">Unpaid (checkout tak aaye)</span><b id="openCount">0</b><span class="muted" id="openTotal"></span></div>
-        <div class="stat"><span class="muted">Sab orders</span><b id="allCount">0</b></div>
-        <div class="stat"><span class="muted">Aaj ki sales (paid)</span><b id="todayCount">0</b><span class="muted" id="todayTotal"></span></div>
+        <div class="stat"><span class="muted">Unpaid checkouts</span><b id="openCount">0</b><span class="muted" id="openTotal"></span></div>
+        <div class="stat"><span class="muted">All orders</span><b id="allCount">0</b></div>
+        <div class="stat"><span class="muted">Today’s revenue</span><b id="todayCount">0</b><span class="muted" id="todayTotal"></span></div>
       </div>
       <div class="row" style="margin-top:12px">
         <select id="statusFilter" style="max-width:240px">
-          <option value="ALL">Sab orders</option>
-          <option value="CREATED">Unpaid (follow-up)</option>
+          <option value="ALL">All orders</option>
+          <option value="CREATED">Unpaid</option>
           <option value="PAID">Paid</option>
           <option value="FAILED">Failed</option>
           <option value="CANCELLED">Cancelled</option>
         </select>
-        <button class="btn light" id="refreshBtn" type="button">Refresh</button><button class="btn light" id="exportOrdersBtn" type="button">Export unpaid / cancelled CSV</button>
+        <button class="btn light" id="refreshBtn" type="button">Refresh</button><button class="btn light" id="exportOrdersBtn" type="button">Export filtered orders · CSV</button><button class="btn light" id="bulkDeleteBtn" type="button">Delete selected</button>
       </div>
-      <p class="help">Unpaid order follow-up sirf usi buyer ko bhejo jisne khud details di thi. Message bhejne se pehle Cashfree dashboard mein check kar lo ki payment to nahi ho gayi.</p>
+      <p class="help">Contact customers only about their own checkout, respect consent, and verify payment status in Cashfree before following up.</p>
       <p id="ordersMsg" class="muted"></p>
       <div id="orderList"></div>
     </section>
 
+    <section class="card hidden" data-panel="storefront">
+      <div class="section-kicker">BRAND EXPERIENCE</div><h2>Storefront studio</h2>
+      <p class="muted">Manage the homepage video independently of product listings. Video files remain hosted on YouTube and load only after customers click Play.</p>
+      <form id="storefrontForm" class="grid"><div class="field full"><label for="homeVideoUrl">Homepage video link (YouTube)</label><input type="url" id="homeVideoUrl" placeholder="https://www.youtube.com/watch?v=..." maxlength="400"><small class="help">Leave blank to hide the section.</small></div><div class="field full"><div class="row"><button class="btn" type="submit">Save storefront</button><a class="btn light" href="/" target="_blank" rel="noopener">View live website ↗</a></div></div></form><p id="storefrontMsg" role="status" class="muted"></p>
+    </section>
     <section class="card hidden" data-panel="coupons">
       <h2>Coupons (launch offer / discount codes)</h2>
       <form id="couponForm" class="grid">
-        <div class="field"><label for="cCode">Code (jaise LAUNCH20)</label><input id="cCode" maxlength="20" required></div>
+        <div class="field"><label for="cCode">Code (e.g. LAUNCH20)</label><input id="cCode" maxlength="20" required></div>
         <div class="field"><label for="cType">Type</label><select id="cType"><option value="percent">Percent (%)</option><option value="fixed">Fixed (Rs)</option></select></div>
         <div class="field"><label for="cValue">Value</label><input id="cValue" type="number" min="1" step="0.01" required></div>
-        <div class="field"><label for="cMax">Max uses (khali = unlimited)</label><input id="cMax" type="number" min="1" step="1"></div>
-        <div class="field"><label for="cExpires">Expires on (khali = no expiry)</label><input id="cExpires" type="date"></div>
+        <div class="field"><label for="cMax">Max uses (blank = unlimited)</label><input id="cMax" type="number" min="1" step="1"></div>
+        <div class="field"><label for="cExpires">Expires on (blank = no expiry)</label><input id="cExpires" type="date"></div>
         <div class="field" style="justify-content:flex-end"><button class="btn" type="submit">Save coupon</button></div>
       </form>
       <p id="couponMsg" class="msg hidden"></p>
@@ -134,8 +140,8 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
     </section>
 
     <section class="card hidden" data-panel="products">
-      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Products</h2><button class="btn" id="newProductBtn" type="button">Naya product</button></div>
-      <p class="help">Har product ka apna link hota hai. Link copy karke wahi product promote karo.</p>
+      <div class="row" style="justify-content:space-between"><h2 style="margin:0">Products</h2><button class="btn" id="newProductBtn" type="button">New product</button></div>
+      <p class="help">Every product has its own shareable link.</p>
       <div class="row" style="margin:14px 0"><input id="productSearch" type="search" placeholder="Search products by name or link…" aria-label="Search products" style="max-width:430px"><select id="productFilter" aria-label="Filter products" style="max-width:160px"><option value="all">All products</option><option value="published">Live</option><option value="draft">Draft</option><option value="archived">Archived</option></select></div><div id="productList" class="product-rows" style="margin-top:8px"></div>
       <p id="listMsg" class="msg hidden"></p>
     </section>
@@ -145,49 +151,49 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
       <form id="settingsForm">
         <div class="grid">
           <div class="field"><label for="productName">Product name *</label><input id="productName" maxlength="100" required></div>
-          <div class="field"><label for="slug">Product link (URL) *</label><input id="slug" maxlength="60" placeholder="creator-kit"><span class="help">Link: /p/creator-kit (sirf chhote letters, numbers, -)</span></div>
-          <div class="field"><label for="status">Status</label><select id="status"><option value="published">Live (store par dikhega)</option><option value="draft">Draft (hidden)</option></select></div>
-          <div class="field"><label for="eyebrow">Chhota label</label><input id="eyebrow" maxlength="40"></div>
+          <div class="field"><label for="slug">Product link (URL) *</label><input id="slug" maxlength="60" placeholder="creator-kit"><span class="help">Link: /p/creator-kit (lowercase letters, numbers and hyphens)</span></div>
+          <div class="field"><label for="status">Status</label><select id="status"><option value="published">Published</option><option value="draft">Draft (hidden)</option></select></div>
+          <div class="field"><label for="eyebrow">Short label</label><input id="eyebrow" maxlength="40"></div>
           <div class="field full"><label for="headline">Main headline *</label><input id="headline" maxlength="120" required></div>
           <div class="field"><label for="headlineFont">Headline font family</label><select id="headlineFont"><option value="Manrope">Manrope</option><option value="system-ui">System UI</option><option value="Georgia">Georgia</option><option value="Arial">Arial</option><option value="Poppins">Poppins</option><option value="Montserrat">Montserrat</option><option value="Playfair Display">Playfair Display</option><option value="Space Grotesk">Space Grotesk</option></select></div>
-          <div class="field"><label for="headlineSize">Headline size (desktop px)</label><input id="headlineSize" type="number" min="24" max="64" step="1" value="48"><small class="help">Mobile par size automatically responsive rahega.</small></div>
+          <div class="field"><label for="headlineSize">Headline size (desktop px)</label><input id="headlineSize" type="number" min="24" max="64" step="1" value="48"><small class="help">Automatically adjusts on mobile.</small></div>
           <div class="field"><label for="headlineColor">Headline text color</label><input id="headlineColor" type="color" value="#15172b"></div>
           <div class="field full"><label for="videoUrl">Product video URL (YouTube, optional)</label><input id="videoUrl" type="url" maxlength="400" placeholder="https://www.youtube.com/watch?v=..."><small class="help">Video loads only when a visitor clicks Play. No video is stored on this site.</small></div>
-          <div class="field full"><label for="description">Description *</label><textarea id="description" maxlength="2000" required></textarea></div>
+          <div class="field"><label for="descriptionFont">Description font</label><select id="descriptionFont"><option value="system-ui">System UI</option><option value="Arial">Arial</option><option value="Georgia">Georgia</option><option value="Manrope">Manrope</option><option value="Poppins">Poppins</option><option value="Montserrat">Montserrat</option><option value="Space Grotesk">Space Grotesk</option></select></div><div class="field"><label for="descriptionSize">Description size (px)</label><input id="descriptionSize" type="number" min="13" max="24" value="17"></div><div class="field"><label for="descriptionColor">Description color</label><input id="descriptionColor" type="color" value="#475569"></div><div class="field full"><label for="description">Description *</label><textarea id="description" maxlength="2000" required></textarea></div>
           <div class="field"><label for="price">Selling price (₹) *</label><input id="price" type="number" min="1" step="0.01" required></div>
-          <div class="field"><label for="mrp">Original price (optional)</label><input id="mrp" type="number" min="0" step="0.01"><span class="help">Sirf tabhi bharo jab asli MRP ho.</span></div>
-          <div class="field full"><label for="benefits">Benefits (har line: Title | Description)</label><textarea id="benefits"></textarea></div>
-          <div class="field full"><label for="included">Kya milega (har line mein ek item)</label><textarea id="included"></textarea></div>
-          <div class="field full"><label for="faqs">FAQs (har line: Sawal | Jawab)</label><textarea id="faqs"></textarea></div>
-          <div class="field full"><label for="reviews">Testimonials: sirf genuine customers ke (har line: Naam | Review)</label><textarea id="reviews"></textarea></div>
-          <div class="field"><label for="theme">Store theme</label><select id="theme"><option value="navy">Midnight blue · Trust</option><option value="forest">Forest green · Wellness</option><option value="violet">Royal violet · Creative</option><option value="sunset">Sunset amber · Energy (legacy)</option><option value="aggressive">🔥 Aggressive · Fitness</option><option value="luxury">💎 Luxury · Premium</option><option value="soft">🌸 Soft Minimal · Education</option><option value="tech">⚡ Modern Tech · Digital</option></select><small class="help">Each theme follows customer device light/dark mode.</small></div><div class="field"><label for="accentColor">Custom accent colour (optional)</label><input id="accentColor" type="color" value="#2563eb"><label style="display:inline-flex;gap:8px;align-items:center"><input id="useAccent" type="checkbox"> Use custom colour</label></div><div class="field full"><div class="theme-preview" id="themePreview" aria-live="polite"><span>LIVE THEME PREVIEW</span><strong id="themePreviewTitle">Your product</strong><small id="themePreviewHint">Preview adapts to device appearance</small><button type="button" class="theme-preview-btn">Preview button ↗</button></div></div>
+          <div class="field"><label for="mrp">Original price (optional)</label><input id="mrp" type="number" min="0" step="0.01"><span class="help">Enter only a genuine original price.</span></div>
+          <div class="field full"><label for="benefits">Benefits (Title | Description per line)</label><textarea id="benefits"></textarea></div>
+          <div class="field full"><label for="included">What’s included (one item per line)</label><textarea id="included"></textarea></div>
+          <div class="field full"><label for="faqs">FAQs (Question | Answer per line)</label><textarea id="faqs"></textarea></div>
+          <div class="field full"><label for="reviews">Verified customer reviews (Name | Review per line)</label><textarea id="reviews"></textarea></div>
+          <div class="field"><label for="theme">Store theme</label><select id="theme"><option value="navy">Midnight blue · Trust</option><option value="forest">Forest green · Wellness</option><option value="violet">Royal violet · Creative</option><option value="sunset">Sunset amber · Energy (legacy)</option><option value="aggressive">🔥 Aggressive · Fitness</option><option value="luxury">💎 Luxury · Premium</option><option value="soft">🌸 Soft Minimal · Education</option><option value="tech">⚡ Modern Tech · Digital</option></select><small class="help">Each theme follows customer device light/dark mode.</small></div><div class="field"><label for="accentColor">Custom accent color (optional)</label><input id="accentColor" type="color" value="#2563eb"><label style="display:inline-flex;gap:8px;align-items:center"><input id="useAccent" type="checkbox"> Use custom color</label></div><div class="field full"><div class="theme-preview" id="themePreview" aria-live="polite"><span>LIVE THEME PREVIEW</span><strong id="themePreviewTitle">Your product</strong><small id="themePreviewHint">Preview adapts to device appearance</small><button type="button" class="theme-preview-btn">Preview button ↗</button></div></div>
           <div class="field full"><label for="deliveryUrl">Product delivery · Google Drive folder/file sharing URL</label><input id="deliveryUrl" type="url" placeholder="https://drive.google.com/drive/folders/…"><small class="help">Buyers get this link only after Cashfree payment verification. Anyone with link can share it; not DRM.</small></div>
-          <div class="field full"><label for="coverImage">Cover image path (upload na ho to ye use hoga)</label><input id="coverImage"></div>
+          <div class="field full"><label for="coverImage">Fallback cover image URL</label><input id="coverImage"></div>
           <div class="field"><label for="brand">Store name</label><input id="brand" maxlength="60"></div>
           <div class="field"><label for="email">Support email *</label><input id="email" type="email" required></div>
-          <div class="field"><label for="makerName">Creator naam</label><input id="makerName" maxlength="80"></div>
+          <div class="field"><label for="makerName">Creator name</label><input id="makerName" maxlength="80"></div>
           <div class="field"><label for="whatsapp">WhatsApp number (country code ke saath)</label><input id="whatsapp" inputmode="numeric" placeholder="919876543210"></div>
           <div class="field full"><label for="makerLine">Creator bio / support line</label><textarea id="makerLine" maxlength="300"></textarea></div>
           <div class="field"><label for="responseTime">Reply time</label><input id="responseTime" maxlength="60"></div>
           <div class="field"><label for="legal">Footer legal line (optional)</label><input id="legal" maxlength="200"></div>
-          <div class="field"><label for="pixelId">Meta Pixel ID (is product ke liye)</label><input id="pixelId" inputmode="numeric"></div>
+          <div class="field"><label for="pixelId">Meta Pixel ID (for this product)</label><input id="pixelId" inputmode="numeric"></div>
         </div>
         <div class="field full"><label for="fontTheme">Storefront font (landing page)</label><select id="fontTheme"><option value="manrope">Modern (Manrope + DM Sans)</option><option value="poppins">Friendly (Poppins)</option><option value="playfair">Elegant (Playfair Display + Inter)</option><option value="space">Tech (Space Grotesk + Inter)</option><option value="montserrat">Bold (Montserrat)</option></select></div>
-        <div class="row" style="margin-top:14px"><button class="btn" id="saveBtn" type="submit">Save changes</button><button class="btn light" id="cancelEdit" type="button">Band karo</button></div>
+        <div class="row" style="margin-top:14px"><button class="btn" id="saveBtn" type="submit">Save changes</button><button class="btn light" id="cancelEdit" type="button">Cancel</button></div>
         <p id="saveMsg" class="msg hidden"></p>
       </form>
 
       <div id="mediaArea" class="hidden" style="margin-top:18px;border-top:1px solid #e3e5f2;padding-top:16px">
-        <h2>Cover aur product file</h2>
-        <p class="help">Cover public hota hai. Product file private storage mein rehti hai, aur sirf paid buyer ko milti hai.</p>
-        <div class="upload-info">COVER IMAGE · Avoid printing a fixed price inside the image; use the live price field below the cover. Available while creating product. Without R2, JPG/PNG/WebP covers up to 350 KB are stored in D1. Larger images: compress or use a direct image URL.</div><div class="field"><label for="coverInput">Cover image (R2: 2 MB, without R2: 350 KB)</label><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp"></div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="coverUpload" type="button">Cover upload karo</button><button class="btn light" id="coverRemove" type="button">Cover hatao</button></div>
-        <div class="upload-info" style="margin-top:18px">DELIVERY FILE · For free hosting, paste a Google Drive link above.</div><div class="field" style="margin-top:12px"><label for="fileInput">Product file (PDF, ZIP, EPUB, MP4, MP3, DOCX, XLSX, JPG, PNG; 50 MB tak)</label><input id="fileInput" type="file"></div>
-        <div class="row" style="margin-top:8px"><button class="btn" id="fileUpload" type="button">File upload karo</button><button class="btn light" id="fileRemove" type="button">File hatao</button></div>
+        <h2>Product cover and delivery file</h2>
+        <p class="help">The cover is public. Private files become accessible after verified payment.</p>
+        <div class="upload-info">COVER IMAGE · Avoid printing a fixed price inside the image; use the live price field below the cover. Available while creating product. Without R2, JPG/PNG/WebP covers up to 350 KB are stored in D1. Larger images: compress or use a direct image URL.</div><div class="field"><label for="coverInput">Cover image (2 MB with R2, 350 KB without R2)</label><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp"></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="coverUpload" type="button">Upload cover</button><button class="btn light" id="coverRemove" type="button">Remove cover</button></div>
+        <div class="upload-info" style="margin-top:18px">DELIVERY FILE · For free hosting, paste a Google Drive link above.</div><div class="field" style="margin-top:12px"><label for="fileInput">Digital product file (up to 50 MB)</label><input id="fileInput" type="file"></div>
+        <div class="row" style="margin-top:8px"><button class="btn" id="fileUpload" type="button">Upload file</button><button class="btn light" id="fileRemove" type="button">Remove file</button></div>
         <p id="mediaCurrent" class="muted" style="margin-top:12px"></p>
         <p id="mediaStatus" class="msg hidden"></p>
       </div>
-      <p id="mediaNote" class="muted" style="margin-top:12px">Without R2, use an HTTPS cover image URL and Google Drive delivery link. Cover upload works without R2 for images up to 350 KB using D1; larger images need a hosted URL.</p>
+      <p id="mediaNote" class="muted" style="margin-top:12px">Without R2, use an HTTPS cover URL and Google Drive delivery link. Cover upload works without R2 for images up to 350 KB using D1; larger images need a hosted URL.</p>
     </section>
   </main></div></div>
 </div>
