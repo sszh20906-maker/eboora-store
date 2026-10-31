@@ -136,6 +136,8 @@ export async function onRequestPost({ request, env }) {
   const rawBody = await request.text();
   if (rawBody.length > 256_000) return new Response("payload too large", { status: 413 });
   const webhookTimestamp = request.headers.get("x-webhook-timestamp");
+  // Requests without a signature (e.g. Cashfree's endpoint test) get a 200 and are never processed.
+  if (!request.headers.get("x-webhook-signature")) return new Response("ok: unsigned request ignored", { status: 200 });
   const valid = await validCashfreeSignature(
     rawBody,
     webhookTimestamp,
