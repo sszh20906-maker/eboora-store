@@ -65,6 +65,7 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
 </style>
 <link rel="stylesheet" href="/assets/eboora-premium.css?v=29">
 <link rel="stylesheet" href="/assets/eboora-v31.css?v=31">
+<link rel="stylesheet" href="/assets/eboora-v33.css?v=33">
 </head>
 <body class="admin-premium">
 <div class="wrap">
@@ -145,6 +146,9 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
           <div class="field"><label for="status">Status</label><select id="status"><option value="published">Live (store par dikhega)</option><option value="draft">Draft (hidden)</option></select></div>
           <div class="field"><label for="eyebrow">Chhota label</label><input id="eyebrow" maxlength="40"></div>
           <div class="field full"><label for="headline">Main headline *</label><input id="headline" maxlength="120" required></div>
+          <div class="field"><label for="headlineFont">Headline font family</label><select id="headlineFont"><option value="Manrope">Manrope</option><option value="system-ui">System UI</option><option value="Georgia">Georgia</option><option value="Arial">Arial</option></select></div>
+          <div class="field"><label for="headlineSize">Headline size (desktop px)</label><input id="headlineSize" type="number" min="24" max="64" step="1" value="48"><small class="help">Mobile par size automatically responsive rahega.</small></div>
+          <div class="field"><label for="headlineColor">Headline text color</label><input id="headlineColor" type="color" value="#15172b"></div>
           <div class="field full"><label for="description">Description *</label><textarea id="description" maxlength="2000" required></textarea></div>
           <div class="field"><label for="price">Selling price (₹) *</label><input id="price" type="number" min="1" step="0.01" required></div>
           <div class="field"><label for="mrp">Original price (optional)</label><input id="mrp" type="number" min="0" step="0.01"><span class="help">Sirf tabhi bharo jab asli MRP ho.</span></div>
@@ -171,7 +175,7 @@ body{background:#f3f6fc;color:var(--ink);font-family:Inter,ui-sans-serif,system-
       <div id="mediaArea" class="hidden" style="margin-top:18px;border-top:1px solid #e3e5f2;padding-top:16px">
         <h2>Cover aur product file</h2>
         <p class="help">Cover public hota hai. Product file private storage mein rehti hai, aur sirf paid buyer ko milti hai.</p>
-        <div class="upload-info">COVER IMAGE · Available while creating product. Without R2, JPG/PNG/WebP covers up to 350 KB are stored in D1. Larger images: compress or use a direct image URL.</div><div class="field"><label for="coverInput">Cover image (R2: 2 MB, without R2: 350 KB)</label><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp"></div>
+        <div class="upload-info">COVER IMAGE · Avoid printing a fixed price inside the image; use the live price field below the cover. Available while creating product. Without R2, JPG/PNG/WebP covers up to 350 KB are stored in D1. Larger images: compress or use a direct image URL.</div><div class="field"><label for="coverInput">Cover image (R2: 2 MB, without R2: 350 KB)</label><input id="coverInput" type="file" accept="image/jpeg,image/png,image/webp"></div>
         <div class="row" style="margin-top:8px"><button class="btn" id="coverUpload" type="button">Cover upload karo</button><button class="btn light" id="coverRemove" type="button">Cover hatao</button></div>
         <div class="upload-info" style="margin-top:18px">DELIVERY FILE · For free hosting, paste a Google Drive link above.</div><div class="field" style="margin-top:12px"><label for="fileInput">Product file (PDF, ZIP, EPUB, MP4, MP3, DOCX, XLSX, JPG, PNG; 50 MB tak)</label><input id="fileInput" type="file"></div>
         <div class="row" style="margin-top:8px"><button class="btn" id="fileUpload" type="button">File upload karo</button><button class="btn light" id="fileRemove" type="button">File hatao</button></div>

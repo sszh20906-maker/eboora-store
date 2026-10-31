@@ -27,6 +27,9 @@ function readForm() {
     productName: $('productName').value,
     eyebrow: $('eyebrow').value,
     headline: $('headline').value,
+    headlineFont: $('headlineFont').value,
+    headlineSize: Number($('headlineSize').value),
+    headlineColor: $('headlineColor').value,
     description: $('description').value,
     price: $('price').value,
     mrp: $('mrp').value,
@@ -58,6 +61,9 @@ function fillForm(p) {
   $('productName').value = p.productName || '';
   $('eyebrow').value = p.eyebrow || 'Digital download';
   $('headline').value = p.headline || '';
+  $('headlineFont').value = ['Manrope','system-ui','Georgia','Arial'].includes(p.headlineFont) ? p.headlineFont : 'Manrope';
+  $('headlineSize').value = Number(p.headlineSize) >= 24 && Number(p.headlineSize) <= 64 ? p.headlineSize : 48;
+  $('headlineColor').value = /^#[0-9a-fA-F]{6}$/.test(p.headlineColor || '') ? p.headlineColor : '#15172b';
   $('description').value = p.description || '';
   $('price').value = p.price || '';
   $('mrp').value = p.mrp || '';

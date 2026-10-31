@@ -29,7 +29,7 @@ function el(tag, cls, text) {
       body.append(price, el('div', 'cta', 'View product'));
       const quick = el('button','quick-view','Quick view'); quick.type='button'; quick.setAttribute('aria-label','Quick view '+(p.productName||p.name||'product'));
       quick.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openQuickView(p);});
-      body.append(quick);card.dataset.productTheme=p.theme||'tech';if(/^#[0-9a-fA-F]{6}$/.test(p.accentColor||''))card.style.setProperty('--product-accent',p.accentColor);
+      if(!window.matchMedia('(max-width: 760px)').matches) body.append(quick);card.dataset.productTheme=p.theme||'tech';if(/^#[0-9a-fA-F]{6}$/.test(p.accentColor||''))card.style.setProperty('--product-accent',p.accentColor);
       card.append(img, body);
       list.append(card);
     });

@@ -1,0 +1,13 @@
+/* Eboora v33: mobile legibility and consistent covers */
+.admin-premium, body.admin-premium {color-scheme:light!important}
+body.admin-premium input:not([type=checkbox]):not([type=radio]),body.admin-premium textarea,body.admin-premium select {color:#17233b!important;background-color:#fff!important;-webkit-text-fill-color:#17233b!important;opacity:1;border-color:#c9d4e5!important;color-scheme:light!important}
+body.admin-premium input::placeholder,body.admin-premium textarea::placeholder{-webkit-text-fill-color:#69758b!important;color:#69758b!important}
+body.admin-premium input[type=color]{-webkit-text-fill-color:initial!important;min-height:44px}
+body.admin-premium .card,body.admin-premium .field{color:#17233b}
+body.admin-premium .theme-preview{color:white}
+.product-premium .hero h1{font-family:var(--headline-font,Manrope,system-ui,sans-serif)!important;font-size:clamp(1.5rem,var(--headline-size,3rem),3.5rem)!important;color:var(--headline-color,inherit);overflow-wrap:anywhere;hyphens:auto;max-width:100%;line-height:1.16;letter-spacing:-.025em}
+@media(max-width:760px){.product-premium .hero h1{font-size:clamp(1.35rem, min(var(--headline-size,3rem), 6vw), 2.05rem)!important;line-height:1.22}.product-premium .hero-copy{min-width:0}}
+.product-premium .cover,.catalog-premium .item>img{aspect-ratio:16/9!important;object-fit:contain!important}
+.product-premium .cover img{object-fit:contain!important;width:100%;height:100%}
+.catalog-premium .item>img{width:100%;height:auto;object-fit:contain!important}
+@media(max-width:760px){.catalog-premium .quick-view{display:none!important}.catalog-premium .item{touch-action:manipulation}}
