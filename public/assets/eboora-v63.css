@@ -1,0 +1,6 @@
+/* v63: storefront uses one readable light palette in every phone theme (no invisible dark-on-dark text) */
+body.catalog-premium{background:#f7f9fd!important;color:#10233c!important}
+body.catalog-premium header{background:#ffffff!important;color:#10233c!important}
+body.catalog-premium .item{background:#ffffff!important;color:#10233c!important}
+body.catalog-premium .item .name,body.catalog-premium .item .price,body.catalog-premium .item h2,body.catalog-premium .item h3{color:#10233c!important}
+body.catalog-premium .item .muted,body.catalog-premium .item p,body.catalog-premium .muted{color:#4b5b72!important}
