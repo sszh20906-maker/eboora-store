@@ -18,6 +18,8 @@ function renderDescription(node, value){
  flushParagraph();flushList();
 }
 function renderProductGallery(){
+ // v62: landing.html has a fixed cover <img id="coverImg">; point it at the product's cover too.
+ const fixedCover=document.getElementById('coverImg'); if(fixedCover&&CONFIG.coverImage){fixedCover.src=CONFIG.coverImage;}
  const host=el('productGallery'); if(!host)return;
  const primaryCover=CONFIG.coverImage||CONFIG.coverUrl||CONFIG.cover_image||'/assets/cover.svg';
  const urls=[primaryCover,...(Array.isArray(CONFIG.galleryImages)?CONFIG.galleryImages:[])].filter((v,i,a)=>typeof v==='string'&&v.trim()&&a.indexOf(v)===i).slice(0,9);
