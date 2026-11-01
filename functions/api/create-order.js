@@ -6,6 +6,9 @@ import { clientIp, countHit } from "../_lib/ratelimit.js";
 import { quoteCoupon, normalizeCode } from "../_lib/coupons.js";
 import { DEFAULT_PRODUCT_ID, getProductById } from "../_lib/products.js";
 
+// v71: sites allowed to start a checkout. Payments work from these domains even if SITE_URL is stale.
+const ALLOWED_SITES = ["https://eboora.shop", "https://www.eboora.shop", "https://eboora-store.pages.dev"];
+
 export async function onRequestPost({ request, env }) {
   if (!hasCashfreeConfig(env)) return json({ error: "Payments are not configured yet. Please contact support." }, 503);
   if (!env.ORDERS_DB) return json({ error: "Order storage is not configured yet. Please contact support." }, 503);
@@ -17,7 +20,8 @@ export async function onRequestPost({ request, env }) {
   // Prevent cross-origin sites from using this endpoint as an order-creation proxy.
   const origin = request.headers.get("Origin");
   try {
-    if (origin && new URL(origin).origin !== new URL(env.SITE_URL).origin) return json({ error: "Invalid request origin." }, 403);
+    const configuredSite = String(env.SITE_URL || "").replace(/\/$/, "");
+    if (origin && !ALLOWED_SITES.includes(new URL(origin).origin) && (!configuredSite || new URL(origin).origin !== new URL(configuredSite).origin)) return json({ error: "Invalid request origin.", received: origin, expected: configuredSite }, 403);
   } catch { return json({ error: "Invalid site configuration." }, 503); }
 
   let input;
@@ -65,7 +69,7 @@ export async function onRequestPost({ request, env }) {
 
   const orderId = `ck_${Date.now().toString(36)}_${crypto.randomUUID().replace(/-/g, "").slice(0, 20)}`;
   const customerId = `c_${crypto.randomUUID().replace(/-/g, "").slice(0, 24)}`;
-  const siteUrl = String(env.SITE_URL).replace(/\/$/, "");
+  const siteUrl = (origin && ALLOWED_SITES.includes(new URL(origin).origin)) ? new URL(origin).origin : String(env.SITE_URL).replace(/\/$/, "");
   const payload = {
     order_id: orderId,
     order_amount: amount,
