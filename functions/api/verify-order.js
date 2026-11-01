@@ -49,7 +49,7 @@ export async function onRequestGet({ request, env }) {
       currency: record.currency,
       download_url: downloadUrl,
       email_hint: maskEmail(record.customer_email),
-      support: await supportFor(env, record.product_id)
+      support: await supportFor(env, record.product_id), ...(await productTracking(env, record.product_id))
     });
   } catch (error) {
     console.error("Could not prepare verified download", error);
@@ -57,3 +57,16 @@ export async function onRequestGet({ request, env }) {
   }
 }
 
+
+// v70: product's own Meta pixel ID (valid digits only), so the thank-you page tracks the purchase with the right pixel.
+async function productTracking(env, productId){
+  try{
+    const p = await getProductById(env, productId);
+    const pixel = String((p && p.pixelId) || "");
+    return {
+      pixelId: /^\d{5,20}$/.test(pixel) ? pixel : "",
+      productId: String(productId || ""),
+      productName: (p && p.name) ? String(p.name) : ""
+    };
+  }catch(_){ return {pixelId:"", productId:String(productId||""), productName:""}; }
+}
