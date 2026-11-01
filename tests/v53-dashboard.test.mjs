@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const html=fs.readFileSync(new URL('../public/admin.html',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../public/admin.js',import.meta.url),'utf8');
+const api=fs.readFileSync(new URL('../functions/api/admin/orders.js',import.meta.url),'utf8');
+for (const id of ['overviewRefresh','customerSnapshot','topProducts','overviewStats','salesChart']) assert.ok(html.includes(`id="${id}"`),`missing dashboard element ${id}`);
+assert.match(js,/Unique customers/); assert.match(js,/Average order value/); assert.match(js,/topProducts/); assert.match(js,/overviewRefresh/);
+assert.match(api,/COUNT\(DISTINCT customer_email\)/); assert.match(api,/json_extract\(p\.data, '\$\.productName'\)/); assert.match(api,/topProducts/);
+assert.match(api,/requireAdmin/);
+console.log('V53 admin dashboard analytics and responsive overview checks passed.');

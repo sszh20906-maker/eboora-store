@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {onRequestGet as adminGet,onRequestPut as adminPut} from '../functions/api/admin/site-settings.js';
+import {onRequestGet as publicGet} from '../functions/api/site-settings.js';
+import {makeDb,ADMIN_COOKIE,TEST_ADMIN_HASH} from './helpers/mockdb.mjs';
+const db=makeDb(),env={ORDERS_DB:db,ADMIN_EMAIL:'owner@example.test',ADMIN_PASSWORD_HASH:TEST_ADMIN_HASH};
+const req=(method='GET',body)=>new Request('https://shop.example.test/api/admin/site-settings',{method,headers:{Cookie:ADMIN_COOKIE,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+assert.equal((await adminGet({request:new Request('https://x'),env})).status,401);
+assert.equal((await adminPut({request:req('PUT',{gaId:'bad'}),env})).status,400);
+const payload={brand:'Eboora',tagline:'Digital products',logoUrl:'https://cdn.example.test/logo.png',supportEmail:'help@example.test',seoTitle:'Eboora | Digital downloads',seoDescription:'Discover useful digital products.',ogImage:'https://cdn.example.test/share.jpg',instagram:'https://www.instagram.com/eboora',youtube:'https://www.youtube.com/@eboora',facebook:'https://www.facebook.com/eboora',x:'https://x.com/eboora',gaId:'G-ABC1234567',pixelId:'123456789012345'};
+assert.equal((await adminPut({request:req('PUT',payload),env})).status,200);
+const pub=await publicGet({env});assert.equal(pub.status,200);const data=await pub.json();assert.equal(data.brand,'Eboora');assert.equal(data.gaId,undefined);assert.equal(data.pixelId,undefined);assert.equal(data.seoTitle,payload.seoTitle);
+console.log('V55 site settings validation, auth, persistence and public-field filtering passed.');

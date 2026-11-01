@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const html=fs.readFileSync(new URL('../public/admin.html',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../public/admin.js',import.meta.url),'utf8');
+const api=fs.readFileSync(new URL('../functions/api/admin/orders.js',import.meta.url),'utf8');
+assert.match(html,/id="orderSearch"/);
+assert.match(js,/URLSearchParams\(\{ status:/);
+assert.match(js,/orderSearch.*addEventListener\('input'/s);
+assert.match(api,/customer_email LIKE/);
+assert.match(api,/customer_phone LIKE/);
+assert.match(api,/LIMIT 500/);
+assert.match(api,/bulk_delete/);
+assert.match(api,/text\/csv/);
+console.log('V54 order search, bulk actions and CSV export checks passed.');

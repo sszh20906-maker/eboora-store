@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const html=fs.readFileSync(new URL('../public/thank-you.html',import.meta.url),'utf8');
+const js=fs.readFileSync(new URL('../public/thank-you.js',import.meta.url),'utf8');
+assert.match(html,/id="dl"/);assert.match(html,/id="retry"/);assert.match(html,/id="orderBox"/);
+assert.match(html,/prefers-reduced-motion/);assert.match(html,/min-height:100svh/);
+assert.match(js,/function done\(/);assert.match(js,/function failed\(/);assert.match(js,/function pending\(/);
+assert.match(js,/FAILED_STATUSES/);assert.match(js,/MAX_PENDING_ATTEMPTS=6/);
+assert.match(js,/No download will be shown until payment is verified/);
+assert.match(js,/download_url&&d\.download_url\.startsWith\("https:\/\/"\)/);
+assert.doesNotMatch(js,/innerHTML|outerHTML|insertAdjacentHTML|document\.write/);
+console.log('V52 thank-you, success, pending and failed payment state tests passed.');

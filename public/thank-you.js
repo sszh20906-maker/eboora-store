@@ -1,65 +1,22 @@
 const CONFIG = {pixelId:"YOUR_PIXEL_ID",productId:"eboora-product",productName:"",email:"support@eboora.store"};
-function initPixel(){
-  if (CONFIG.pixelId && CONFIG.pixelId !== "YOUR_PIXEL_ID" && !window._ebooraPixelLoaded) {
-    !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
-    fbq('init', CONFIG.pixelId); fbq('track', 'PageView'); window._ebooraPixelLoaded=true;
-  }
-}
 const $=id=>document.getElementById(id);
-$("mail").textContent=CONFIG.email; $("mail").href="mailto:"+CONFIG.email;
 const orderId=new URLSearchParams(location.search).get("order_id");
-
-function view(kind,icon,title,msg){
-  const ic=$("ic"); ic.className="ic "+kind; ic.textContent=icon;
-  $("title").textContent=title; $("msg").textContent=msg;
-}
-function done(d){
-  view("ok","✓","Payment received","Thank you! Your files are ready.");
-  if(d.support){ if(d.support.email){ $("mail").textContent=d.support.email; $("mail").href="mailto:"+d.support.email; } if(d.support.whatsapp){ $("wa").href="https://wa.me/"+d.support.whatsapp; $("waWrap").hidden=false; } }
-  if(d.download_url && d.download_url.startsWith("https://")){
-    $("dl").href=d.download_url; $("dl").hidden=false;
-  }
-  $("note").hidden=false;
-  $("note").textContent="We have also emailed this link"+(d.email_hint?" to "+d.email_hint:"")+". Check spam if you do not see it in 5 minutes. The link stays valid for 30 days; reopening this page gives you a fresh one.";
-  // Purchase: fired only after the server confirmed PAID, with the real paid amount.
-  // eventID = order_id, so Meta de-duplicates it against the webhook (server) event.
-  const key="purchase_"+orderId;
-  try{ if(localStorage.getItem(key)) return; }catch(_){}
-  if (typeof window.fbq === "function" && CONFIG.pixelId && CONFIG.pixelId !== "YOUR_PIXEL_ID") {
-    fbq("track","Purchase",{content_ids:[CONFIG.productId],content_name:CONFIG.productName,content_type:"product",num_items:1,value:Number(d.amount),currency:d.currency||"INR"},{eventID:orderId});
-  }
-  try{ localStorage.setItem(key,"1"); }catch(_){}
-}
-const TEMP_STATUSES=["PAYMENT_STATUS_TEMPORARILY_UNAVAILABLE","TOO_MANY_REQUESTS","DELIVERY_NOT_READY"];
+const TEMP_STATUSES=["PAYMENT_STATUS_TEMPORARILY_UNAVAILABLE","TOO_MANY_REQUESTS","DELIVERY_NOT_READY","ORDER_LOOKUP_FAILED"];
 const FAILED_STATUSES=["EXPIRED","TERMINATED","TERMINATION_REQUESTED","CANCELLED","FAILED"];
-const MAX_ATTEMPTS=20;
-const MAX_PENDING_ATTEMPTS=6;
-function retryLater(attempt){ return setTimeout(()=>check(attempt+1),3000); }
-async function check(attempt){
-  view("wait","…","Confirming your payment…","Please keep this page open. This can take up to a minute.");
-  try{
-    const r=await fetch("/api/verify-order?order_id="+encodeURIComponent(orderId),{cache:"no-store"});
-    const d=await r.json().catch(()=>({}));
-    if(d.paid) return done(d);
-    if(!r.ok || TEMP_STATUSES.includes(d.status)){
-      if(attempt<MAX_ATTEMPTS) return retryLater(attempt);
-      return view("bad","!","Still confirming your payment","Reload this page in a minute, or check your email for the download link. Order ID: "+orderId);
-    }
-    if(FAILED_STATUSES.includes(d.status)){
-      return view("bad","!","Payment not completed","This payment was not completed. If money was deducted, it will be confirmed or refunded by email. Otherwise please go back to the store and try again.");
-    }
-    if(attempt<MAX_PENDING_ATTEMPTS) return retryLater(attempt);
-    view("bad","!","Payment not confirmed yet","If money was deducted, your link will arrive by email shortly. If not, write to us with your order ID: "+orderId);
-  }catch(e){
-    if(attempt<MAX_ATTEMPTS) return retryLater(attempt);
-    view("bad","!","Still confirming your payment","Reload this page in a minute, or check your email for the download link. Order ID: "+orderId);
-  }
-}
-async function start(){
-  try{let r=await fetch('/api/config',{cache:'no-store'});if(!r.ok)r=await fetch('/store-config.json',{cache:'no-store'});if(r.ok){const c=await r.json();CONFIG.pixelId=c.pixelId||CONFIG.pixelId;CONFIG.productId=c.productId||CONFIG.productId;CONFIG.productName=c.productName||CONFIG.productName;CONFIG.email=c.email||CONFIG.email;if(c.whatsapp){$('wa').href='https://wa.me/'+String(c.whatsapp).replace(/\D/g,'');$('waWrap').hidden=false;}$('mail').textContent=CONFIG.email;$('mail').href='mailto:'+CONFIG.email;}}
-  catch(_){}
-  initPixel();
-  if(!orderId){view("bad","!","Open this page after payment","Your download link is sent to your email right after payment. Lost it? Write to us and we will resend it.");}
-  else{check(0)}
-}
+const MAX_ATTEMPTS=20,MAX_PENDING_ATTEMPTS=6;let retryTimer=null,attemptCount=0;
+function initPixel(){if(CONFIG.pixelId&&CONFIG.pixelId!=="YOUR_PIXEL_ID"&&!window._ebooraPixelLoaded){!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init',CONFIG.pixelId);fbq('track','PageView');window._ebooraPixelLoaded=true;}}
+function view(kind,icon,title,msg){const el=$("ic");el.className="icon "+kind;el.replaceChildren();if(kind==="wait"){const spin=document.createElement("span");spin.className="spin";spin.setAttribute("aria-label","Loading");el.append(spin);}else el.textContent=icon;$("title").textContent=title;$("msg").textContent=msg;}
+function showOrder(){if(orderId){$("orderBox").hidden=false;$("orderIdText").textContent=orderId;}}
+function showRetry(){ $("retry").hidden=false;$("store").hidden=false; }
+function done(d){if(retryTimer)clearTimeout(retryTimer);view("ok","✓","Payment successful","Thank you for your order. Your payment has been verified and your files are ready.");$("retry").hidden=true;$("store").hidden=false;$("store").textContent="Continue shopping";if(d.support){if(d.support.email){$("mail").textContent=d.support.email;$("mail").href="mailto:"+d.support.email;}if(d.support.whatsapp){$("wa").href="https://wa.me/"+d.support.whatsapp;$("waWrap").hidden=false;}}
+if(d.download_url&&d.download_url.startsWith("https://")){$("dl").href=d.download_url;$("dl").hidden=false;}
+$("note").hidden=false;$("note").textContent="A download link has also been sent"+(d.email_hint?" to "+d.email_hint:"")+". Check your spam folder if it does not arrive. Your secure link remains valid for 30 days; reopening this page can generate a fresh link.";
+const key="purchase_"+orderId;try{if(localStorage.getItem(key))return;}catch(_){}if(typeof window.fbq==="function"&&CONFIG.pixelId!=="YOUR_PIXEL_ID")fbq("track","Purchase",{content_ids:[CONFIG.productId],content_name:CONFIG.productName,content_type:"product",num_items:1,value:Number(d.amount),currency:d.currency||"INR"},{eventID:orderId});try{localStorage.setItem(key,"1");}catch(_){} }
+function failed(status){view("bad","!","Payment not completed","The payment provider reports that this payment was not completed. If your bank account was debited, please wait for the provider or bank to update the status before trying again. Contact support with your order reference if the amount remains debited.");$("retry").hidden=true;$("store").hidden=false;$("store").textContent="Return to store";$("note").hidden=false;$("note").textContent="No download is available for an unsuccessful payment. Do not make another payment if you are unsure whether the first one was debited.";}
+function pending(title="Payment is still processing",msg="Your payment has not been confirmed yet. You can check again in a moment. If money was debited, avoid paying again while the status is being updated."){view("wait","",title,msg);showRetry();$("note").hidden=false;$("note").textContent="Your order reference is shown above. A confirmed payment will unlock your download here and trigger the delivery email.";}
+function retryLater(){retryTimer=setTimeout(()=>check(++attemptCount),3000);}
+async function check(attempt=0){attemptCount=attempt;view("wait","","Confirming your payment","Please keep this page open while we check the payment status securely.");try{const r=await fetch("/api/verify-order?order_id="+encodeURIComponent(orderId),{cache:"no-store"});const d=await r.json().catch(()=>({}));if(d.paid)return done(d);if(FAILED_STATUSES.includes(d.status))return failed(d.status);if(!r.ok||TEMP_STATUSES.includes(d.status)){if(attempt<MAX_ATTEMPTS)return retryLater();return pending("Still confirming your payment","The payment service is taking longer than usual. Please check again shortly. If money was debited, do not pay again until the status is clear.");}if(attempt<MAX_PENDING_ATTEMPTS)return retryLater();pending();}catch(_){if(attempt<MAX_ATTEMPTS)return retryLater();pending("Payment status temporarily unavailable","We could not reach the payment service. Please check again shortly. No download will be shown until payment is verified.");}}
+async function loadConfig(){try{let r=await fetch('/api/config',{cache:'no-store'});if(!r.ok)r=await fetch('/store-config.json',{cache:'no-store'});if(r.ok){const c=await r.json();CONFIG.pixelId=c.pixelId||CONFIG.pixelId;CONFIG.productId=c.productId||CONFIG.productId;CONFIG.productName=c.productName||CONFIG.productName;CONFIG.email=c.email||CONFIG.email;if(c.whatsapp){$("wa").href="https://wa.me/"+String(c.whatsapp).replace(/\D/g,'');$("waWrap").hidden=false;}$("mail").textContent=CONFIG.email;$("mail").href="mailto:"+CONFIG.email;}}catch(_){}}
+$("retry").addEventListener("click",()=>{if(retryTimer)clearTimeout(retryTimer);$("retry").hidden=true;check(0);});
+async function start(){await loadConfig();initPixel();if(!orderId){view("bad","!","Order reference missing","Open this page using the link provided after checkout. If you completed a payment, check your email or contact support for help.");$("store").hidden=false;$("store").textContent="Back to store";return;}showOrder();check(0);}
 start();

@@ -75,6 +75,19 @@ export function validateConfig(input) {
     .map((r) => ({ name: clean(r?.name, 60) || "Customer", text: clean(r?.text, 500) }))
     .filter((r) => r.text).slice(0, 10);
 
+  const galleryInput = Array.isArray(input.galleryImages) ? input.galleryImages : String(input.galleryImages || '').split(/\r?\n/);
+  const galleryImages = [];
+  for (const raw of galleryInput) {
+    const value = clean(raw, 500);
+    if (!value) continue;
+    try {
+      const u = new URL(value);
+      if (u.protocol !== 'https:' || u.username || u.password || u.port || !['http:','https:'].includes(u.protocol)) throw new Error('Invalid image URL');
+      if (!/^image\//i.test(String(u.pathname).match(/\.(jpe?g|png|webp|avif|gif)$/i)?.[0] ? 'image/ok' : '')) throw new Error('Use a direct image URL ending in JPG, PNG, WebP, AVIF or GIF.');
+      if (!galleryImages.includes(u.toString())) galleryImages.push(u.toString());
+    } catch (error) { errors.push(error.message === 'Invalid image URL' ? 'Gallery images must use secure HTTPS URLs without credentials.' : error.message); }
+    if (galleryImages.length >= 8) break;
+  }
   const videoUrl = clean(input.videoUrl, 400);
   let approvedVideo = '';
   if (videoUrl) {
@@ -99,6 +112,7 @@ export function validateConfig(input) {
     headlineColor: /^#[0-9a-fA-F]{6}$/.test(String(input.headlineColor || "")) ? input.headlineColor : "#15172b",
     description,
     videoUrl: approvedVideo,
+    galleryImages,
     descriptionFont: ['system-ui','Arial','Georgia','Manrope','Poppins','Montserrat','Space Grotesk'].includes(input.descriptionFont) ? input.descriptionFont : 'system-ui',
     descriptionSize: Number(input.descriptionSize) >= 13 && Number(input.descriptionSize) <= 24 ? Number(input.descriptionSize) : 17,
     descriptionColor: /^#[0-9a-fA-F]{6}$/.test(String(input.descriptionColor || '')) ? input.descriptionColor : '#475569',

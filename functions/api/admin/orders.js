@@ -37,11 +37,15 @@ export async function onRequestGet({ request, env }) {
     let sql = `SELECT order_id, amount, currency, customer_name, customer_email, customer_phone, status, email_status, created_at, paid_at,
       (SELECT COALESCE(SUM(amount), 0) FROM refunds WHERE refunds.order_id = orders.order_id) AS refunded FROM orders WHERE ${VISIBLE}`;
     if (status !== "ALL") { sql += " AND status = ?"; binds.push(status); }
-    sql += " ORDER BY created_at DESC LIMIT 200";
+    const search = (new URL(request.url).searchParams.get("q") || "").trim().slice(0, 100);
+    if (search) { sql += " AND (order_id LIKE ? OR customer_name LIKE ? OR customer_email LIKE ? OR customer_phone LIKE ?)"; const term = `%${search.replace(/[\\%_]/g, "\\$&")}%`; binds.push(term, term, term, term); }
+    sql += " ORDER BY created_at DESC LIMIT 500";
     const listResult = await env.ORDERS_DB.prepare(sql).bind(...binds).all();
 
     const chart = await env.ORDERS_DB.prepare(`SELECT date(COALESCE(paid_at, updated_at)) AS day, COALESCE(SUM(amount), 0) AS total FROM orders WHERE ${VISIBLE} AND status = 'PAID' AND date(COALESCE(paid_at, updated_at)) >= date('now', '-13 days') GROUP BY day ORDER BY day`).all();
-    return json({ summary, today, revenueByDay: chart.results || [], orders: listResult.results || [] });
+    const customerStats = await env.ORDERS_DB.prepare(`SELECT COUNT(DISTINCT customer_email) AS customers, COUNT(*) AS paidOrders FROM orders WHERE ${VISIBLE} AND status = 'PAID'`).first();
+    const productStats = await env.ORDERS_DB.prepare(`SELECT COALESCE(json_extract(p.data, '$.productName'), p.slug, o.product_id) AS name, COUNT(*) AS sales, COALESCE(SUM(o.amount),0) AS revenue FROM orders o LEFT JOIN products p ON p.id = o.product_id WHERE NOT EXISTS (SELECT 1 FROM admin_hidden_orders h WHERE h.order_id = o.order_id) AND o.status = 'PAID' GROUP BY o.product_id ORDER BY sales DESC, revenue DESC LIMIT 5`).all();
+    return json({ summary, today, revenueByDay: chart.results || [], orders: listResult.results || [], customerStats: { customers: Number(customerStats?.customers) || 0, paidOrders: Number(customerStats?.paidOrders) || 0 }, topProducts: productStats.results || [] });
   } catch (error) {
     console.error("Admin orders query failed", error);
     return json({ error: "Orders could not be loaded. Please try again." }, 503);
