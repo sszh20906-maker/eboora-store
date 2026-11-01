@@ -1,0 +1,3 @@
+/* v66: eyebrow and Buy buttons follow the chosen theme (higher specificity than the older fixed colours). */
+html body.product-premium .eyebrow{background:var(--v31-accent-soft,#f2fbfd)!important;color:var(--product-accent,#0b1424)!important}
+html body.product-premium #heroBuy,html body.product-premium #stickyBuy,html body.product-premium .buy{background:var(--theme-button,#ffc94a)!important;color:var(--theme-button-text,#0b1424)!important}
