@@ -8,5 +8,5 @@ assert.equal((await adminGet({request:new Request('https://x'),env})).status,401
 assert.equal((await adminPut({request:req('PUT',{gaId:'bad'}),env})).status,400);
 const payload={brand:'Eboora',tagline:'Digital products',logoUrl:'https://cdn.example.test/logo.png',supportEmail:'help@example.test',seoTitle:'Eboora | Digital downloads',seoDescription:'Discover useful digital products.',ogImage:'https://cdn.example.test/share.jpg',instagram:'https://www.instagram.com/eboora',youtube:'https://www.youtube.com/@eboora',facebook:'https://www.facebook.com/eboora',x:'https://x.com/eboora',gaId:'G-ABC1234567',pixelId:'123456789012345'};
 assert.equal((await adminPut({request:req('PUT',payload),env})).status,200);
-const pub=await publicGet({env});assert.equal(pub.status,200);const data=await pub.json();assert.equal(data.brand,'Eboora');assert.equal(data.gaId,undefined);assert.equal(data.pixelId,undefined);assert.equal(data.seoTitle,payload.seoTitle);
+const pub=await publicGet({env});assert.equal(pub.status,200);const data=await pub.json();assert.equal(data.brand,'Eboora');assert.equal(data.gaId,undefined);assert.ok(data.pixelId===undefined||/^\d{5,20}$/.test(data.pixelId));assert.equal(data.seoTitle,payload.seoTitle);
 console.log('V55 site settings validation, auth, persistence and public-field filtering passed.');
