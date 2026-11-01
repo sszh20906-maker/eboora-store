@@ -1,0 +1,4 @@
+/* v60: alternate sections (FAQ, what you receive, creator) use one light palette in every phone theme */
+body.product-premium .section.alt{background:#f5f8fe!important;color:#10233c!important}
+body.product-premium .section.alt h2,body.product-premium .section.alt h3,body.product-premium .section.alt .faq *{color:#10233c!important}
+body.product-premium .section.alt .faq p,body.product-premium .section.alt .muted{color:#4b5b72!important}
