@@ -1,4 +1,4 @@
-const CONFIG = {pixelId:"YOUR_PIXEL_ID",productId:"eboora-product",productName:"",email:"support@eboora.store"};
+const CONFIG = {pixelId:"YOUR_PIXEL_ID",productId:"eboora-product",productName:"",email:"customersupport527@gmail.com"};
 const $=id=>document.getElementById(id);
 const orderId=new URLSearchParams(location.search).get("order_id");
 const TEMP_STATUSES=["PAYMENT_STATUS_TEMPORARILY_UNAVAILABLE","TOO_MANY_REQUESTS","DELIVERY_NOT_READY","ORDER_LOOKUP_FAILED"];
