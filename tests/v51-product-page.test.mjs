@@ -16,6 +16,8 @@ assert.match(page,/id="productGallery"/);
 assert.match(page,/id="videoSection"/);
 assert.match(page,/id="descriptionContent"/);
 assert.match(js,/renderProductGallery/);
+assert.match(js,/Compatibility: older storefronts stored the cover in the legacy store config/);
+assert.match(js,/fetch\('\/api\/config',{cache:'no-store'}\)/);
 assert.match(js,/youtube-nocookie\.com\/embed/);
 assert.match(admin,/id="galleryImages"/);
 console.log('V51 product page, gallery and video tests passed.');

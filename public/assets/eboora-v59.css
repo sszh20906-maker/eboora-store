@@ -1,0 +1,3 @@
+/* v59: stop phone dark mode / Chrome auto-dark from inverting the product and landing pages */
+:root,html{color-scheme:light!important}
+html,body{background-color:#f7f9fd}
