@@ -59,3 +59,21 @@ body.product-premium .section.alt{background:var(--eboora-card,#f7f8fa)}
 body.product-premium .hero{background:linear-gradient(135deg,var(--eboora-card,#f7f8fa),var(--eboora-bg,#fff) 72%)}
 .hex-code-input{box-sizing:border-box;min-height:40px;border:1px solid #cbd5e1;border-radius:9px;padding:8px 10px;background:#fff;color:#172b46}
 .theme-preview{color:var(--preview-headline,#252525)}.theme-preview small{color:var(--preview-body,#525252)}.theme-preview .theme-preview-btn{background:var(--product-accent,#06b6d4);color:#fff}
+
+
+/* Eboora visual repair: keep the original blue/black emblem independent of product themes. */
+body.product-premium .top .logo{display:inline-flex!important;align-items:center!important;gap:10px!important;color:#10203b!important;font-family:Georgia,'Times New Roman',serif!important;font-weight:700!important;font-size:clamp(1.08rem,4vw,1.45rem)!important;letter-spacing:-.035em!important;white-space:nowrap!important}
+body.product-premium .top .logo-mark.logo-real{display:inline-grid!important;place-items:center!important;flex:0 0 38px!important;width:38px!important;height:38px!important;margin:0!important;padding:4px!important;border-radius:10px!important;background:#fff!important;border:1px solid #e6edf4!important;overflow:hidden!important}
+body.product-premium .top .logo-mark.logo-real img{display:block!important;width:100%!important;height:100%!important;object-fit:contain!important;filter:none!important}
+body.product-premium .section .item{background:#fff!important;color:#10203b!important;border:1px solid #dce5ef!important;box-shadow:0 8px 24px #10203b0a!important}
+body.product-premium .section .item h3{color:#10203b!important;opacity:1!important;font-weight:800!important}
+body.product-premium .section .item p{color:#526477!important;opacity:1!important}
+body.product-premium .section .item .bullet{background:#fff0e6!important;color:#2463e9!important}
+body.product-premium .section.alt .item{background:#fff!important}
+body.product-premium .checkout-form .coupon-controls{display:flex!important;gap:8px!important;align-items:stretch!important;width:100%!important}
+body.product-premium .checkout-form .coupon-controls input{min-width:0!important;flex:1 1 auto!important;width:1%!important}
+body.product-premium .checkout-form .coupon-controls button{flex:0 0 auto!important;width:auto!important;min-width:82px!important;margin:0!important;white-space:nowrap!important}
+body.product-premium .checkout-form input{max-width:100%!important;min-width:0!important}
+body.product-premium .sticky{padding-bottom:max(10px,env(safe-area-inset-bottom))!important}
+body.product-premium main{padding-bottom:12px}
+@media(max-width:390px){body.product-premium .top .logo{font-size:1rem!important;gap:7px!important}body.product-premium .top .logo-mark.logo-real{flex-basis:34px!important;width:34px!important;height:34px!important}body.product-premium .checkout-inner{padding:18px!important}}
