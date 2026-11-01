@@ -1,0 +1,2 @@
+/* v65: Buy buttons follow the chosen theme's button colour (overrides the fixed gold from v37). */
+.buy,#heroBuy,#stickyBuy{background:var(--theme-button,#ffc94a)!important;color:var(--theme-button-text,#0b1424)!important}
