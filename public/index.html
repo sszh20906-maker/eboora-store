@@ -2,72 +2,41 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Products | Eboora-Store</title>
 <meta name="description" content="Digital products you can download after secure payment.">
 <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-<style>
-:root{--ink:#15172b;--muted:#646981;--blue:#3548e8;--line:#e3e5f2;--bg:#f6f7ff}
-*{box-sizing:border-box}
-body{margin:0;font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg)}
-.wrap{max-width:1040px;margin:0 auto;padding:24px 16px 56px}
-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-h1{font-size:1.6rem;margin:4px 0;letter-spacing:-.02em}
-.muted{color:var(--muted)}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-top:22px}
-.item{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit}
-.item img{width:100%;aspect-ratio:16/9;object-fit:contain;background:#eef0fa}
-.body{padding:14px 16px 18px;display:flex;flex-direction:column;gap:6px;flex:1}
-.name{font-weight:800;font-size:1.05rem}
-.price{font-weight:800;color:var(--blue)}
-.mrp{color:var(--muted);text-decoration:line-through;font-weight:500;margin-left:6px}
-.cta{margin-top:auto;padding-top:10px;color:var(--blue);font-weight:800}
-.empty{background:#fff;border:1px dashed #c9cde3;border-radius:16px;padding:28px;text-align:center;margin-top:22px}
-footer{margin-top:40px;color:var(--muted);font-size:.9rem;display:flex;gap:14px;flex-wrap:wrap}
-footer a,header a{color:var(--muted)}
-.hidden{display:none!important}
-
-body{background:#f5f8fd;color:#0c1e35;font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}
-.wrap{max-width:1180px}.brand-icon{width:43px;height:43px;object-fit:contain;vertical-align:middle}.brand-e{display:inline-grid;place-items:center;background:#0a2350;color:#fff;border-radius:11px;font-style:italic;font-weight:900;font-size:26px;width:38px;height:38px}
-header{padding:12px 0 25px}header h1{font-size:30px;letter-spacing:-1.6px}
-.hero{border-radius:30px;background:radial-gradient(circle at 85% 10%,#2b68b2 0,transparent 38%),linear-gradient(135deg,#071831,#102c58 65%,#103f76);color:#fff;padding:clamp(30px,7vw,76px);position:relative;overflow:hidden;box-shadow:0 25px 65px #0b2a5633}
-.hero:after{content:"e";position:absolute;font-size:clamp(150px,35vw,380px);font-weight:900;font-style:italic;color:#ffffff0b;right:5%;top:-13%;pointer-events:none}.hero .eyebrow{font-size:12px;letter-spacing:2px;color:#9bc8ff;font-weight:800}
-.hero h2{font-size:clamp(44px,6vw,78px);line-height:1.06;letter-spacing:-3px;margin:24px 0}.hero h2 em{font-style:normal;color:#6ab3ff}.hero p{max-width:550px;font-size:17px;color:#ccd9ed}
-.hero-tags{display:flex;gap:12px;flex-wrap:wrap;margin-top:25px}.hero-tags span{font-size:12px;font-weight:700;background:#ffffff16;border:1px solid #ffffff30;padding:9px 12px;border-radius:50px}
-.section-heading{display:flex;justify-content:space-between;align-items:center;font-size:25px;letter-spacing:-1px;margin:40px 0 18px}.section-heading span{color:#236eec}.item{border-radius:22px;box-shadow:0 10px 30px #0c265010;transition:transform .2s ease,box-shadow .2s}.item:hover{transform:translateY(-4px);box-shadow:0 20px 34px #0c265022}.item img{background:#eaf1ff}.body{padding:22px}.cta{color:#125bcb}
-@media(max-width:600px){.hero{border-radius:23px;padding:32px 23px}.hero h2{letter-spacing:-2px}.hero-tags{gap:7px}.hero-tags span{font-size:11px}}
-
-.hero{min-height:365px;display:flex;align-items:center;border-radius:26px;background:radial-gradient(ellipse at 90% 5%,#1e60b6a9,transparent 47%),radial-gradient(ellipse at 70% 100%,#07366a,transparent 56%),#09182d}.hero:after{content:'✦';font-style:normal;font-size:clamp(130px,23vw,290px);color:#8eb9ff0d;top:0;right:7%}.hero-inner{position:relative;z-index:1}.hero h2{margin:14px 0 18px;font-size:clamp(42px,6vw,74px)}.hero p{max-width:590px}.hero-cta{display:inline-flex;align-items:center;gap:30px;background:#fff;color:#123267;border-radius:12px;margin-top:26px;padding:13px 20px;text-decoration:none;font-weight:850}.hero-cta span{font-size:20px}.section-heading{margin-top:50px}.grid{gap:20px}.item{overflow:hidden;border:1px solid #dfe8f6}.item img{aspect-ratio:1.35;object-fit:cover}.item .body{gap:9px}.item .name{font-size:19px;line-height:1.35}.item .cta{background:#eff5ff;color:#194dab;padding:10px 12px;border-radius:10px;text-align:center;margin-top:13px}.item:hover .cta{background:#1c5cda;color:#fff}.item:focus-visible,.hero-cta:focus-visible{outline:3px solid #f6bc48;outline-offset:4px}
-@media(max-width:600px){.hero{min-height:390px}.hero h2{font-size:clamp(40px,10vw,60px);letter-spacing:-1.8px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.item .body{padding:12px;gap:6px}.item .name{font-size:15px}.item .muted{font-size:12px}.item .cta{font-size:12px}.item img{aspect-ratio:1/1}.hero-tags{gap:5px}.hero-tags span{font-size:10px}.section-heading{font-size:21px}}
-@media(max-width:375px){.grid{grid-template-columns:1fr}.item img{aspect-ratio:1.5}}
-html{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
-html.allow-select,html.allow-select *{-webkit-user-select:text;user-select:text}
-input,textarea{-webkit-user-select:text;user-select:text}
-
-/* V43 storefront polish */
-:root{color-scheme:light}button,a,input{touch-action:manipulation}img{max-width:100%}a:focus-visible,button:focus-visible{outline:3px solid #06b6d4;outline-offset:3px}
-</style>
-<link rel="stylesheet" href="/assets/eboora-premium.css?v=29">
-<link rel="stylesheet" href="/assets/eboora-v31.css?v=31">
-<link rel="stylesheet" href="/assets/eboora-v33.css?v=33">
-<link rel="stylesheet" href="/assets/eboora-v34.css?v=34">
-<link rel="stylesheet" href="/assets/eboora-v37.css?v=37">
-<link rel="stylesheet" href="/assets/eboora-v44.css?v=44"><link rel="stylesheet" href="/assets/eboora-v45.css?v=45">
-<link rel="stylesheet" href="/assets/eboora-v46.css?v=46">
-<link rel="stylesheet" href="/assets/eboora-v63.css?v=63">
+<link rel="stylesheet" href="/assets/shop-v73.css?v=73">
 </head>
-<body class="catalog-premium">
+<body class="shop">
 <div class="wrap">
-<div class="store-announcement"><span class="pulse-dot"></span> DIGITAL GOODS · BUILT FOR WHAT’S NEXT <span class="announcement-right">Secure checkout / Instant access after verification</span></div>
-<header>
-  <div class="brand-stack"><div class="muted" style="font-size:.9rem">EBOORA / DIGITAL MARKETPLACE</div><h1><img class="brand-icon" src="/assets/brand-emblem.png" alt="" width="43" height="43"> eboora<span style="color:#2169ed">.</span></h1></div>
-  <nav class="store-nav" aria-label="Primary navigation"><a href="#list">Shop products</a><a href="#storeVideo">Watch overview</a><a href="/resend.html">Find my order</a></nav>
+<header class="top">
+  <a class="brand" href="/"><img src="/assets/brand-emblem.png" alt="" width="36" height="36"><span>eboora<i>.</i></span></a>
+  <nav aria-label="Primary navigation"><a href="#list">Products</a><a href="#storeVideo">Overview</a><a href="/resend.html">Find my order</a></nav>
 </header>
-<div class="hero"><div class="hero-inner"><span class="eyebrow">CURATED DIGITAL ESSENTIALS</span><h2>Small download.<br><em>Big possibilities.</em></h2><p>Discover thoughtfully made digital products for your next big step. Clear details, simple checkout and digital access after confirmed payment.</p><div class="hero-tags"><span>✓ Secure checkout</span><span>✓ Digital delivery</span><span>✓ Email support</span></div><a class="hero-cta" href="#list">Explore products <span aria-hidden="true">↗</span></a></div></div><div class="store-intro"><span class="store-kicker">THE EBOORA EDIT</span><h2 class="section-heading">Made to move you <span>forward.</span></h2><p>Explore digital resources designed to be useful from day one. Choose your next upgrade.</p><div class="store-controls"><label class="catalog-search">⌕ <input id="catalogSearch" type="search" placeholder="Search digital products" aria-label="Search digital products"></label><select id="catalogSort" aria-label="Sort products"><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="az">Name: A–Z</option></select></div></div>
-<div id="list" class="grid" aria-live="polite"></div><p id="searchEmpty" class="empty hidden">No products match your search.</p>
-<section id="storeVideo" class="store-video hidden" aria-label="Product walkthrough"><div class="store-video-header"><div><span class="store-kicker">DISCOVER MORE</span><h2>See what you can create.</h2><p>Take a closer look before you buy.</p></div></div><div class="store-video-stage" id="storeVideoStage"><button type="button" id="storeVideoPlay" aria-label="Play product overview">▶ &nbsp; Watch the overview</button></div></section>
-<section class="store-promises" aria-label="Shopping advantages"><div><span>01 / CHOOSE</span><strong>Find your next essential.</strong><p>Clear product information and prices in INR.</p></div><div><span>02 / CHECK OUT</span><strong>Pay with confidence.</strong><p>Payments are processed securely by Cashfree.</p></div><div><span>03 / ACCESS</span><strong>Get to work.</strong><p>Download access follows successful payment verification.</p></div></section><div id="empty" class="empty hidden"><strong>Something good is coming.</strong><p class="muted">New digital products will appear here soon.</p></div>
-<footer><strong>EBOORA <span class="cyan">/ DIGITAL STORE</span></strong><div><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/refund.html">Refunds</a><a href="/resend.html">Order help</a></div><small>Digital products. Delivered with intention.</small></footer>
+<section class="hero">
+  <span class="eyebrow">Digital downloads</span>
+  <h1>Small download.<br><em>Big possibilities.</em></h1>
+  <p>Clear details, simple checkout and instant access after your payment is confirmed.</p>
+  <ul class="chips"><li>Secure checkout</li><li>Instant delivery</li><li>Prices in INR</li></ul>
+</section>
+<div class="toolbar">
+  <input id="catalogSearch" type="search" placeholder="Search products" aria-label="Search products">
+  <select id="catalogSort" aria-label="Sort products"><option value="featured">Featured</option><option value="low">Price: low to high</option><option value="high">Price: high to low</option><option value="az">Name: A to Z</option></select>
+</div>
+<div id="list" class="grid" aria-live="polite"></div>
+<p id="empty" class="empty hidden">Products are coming soon. Check back shortly.</p>
+<p id="searchEmpty" class="empty hidden">No products match your search.</p>
+<section id="storeVideo" class="store-video hidden" aria-label="Product walkthrough">
+  <div class="video-head"><span class="kicker">Overview</span><h2>See what you get.</h2></div>
+  <div class="video-stage" id="storeVideoStage"><button type="button" id="storeVideoPlay" aria-label="Play product overview">▶ Watch overview</button></div>
+</section>
+<section class="promises" aria-label="How it works">
+  <div><span>01</span><strong>Choose</strong><p>Clear product information and prices in INR.</p></div>
+  <div><span>02</span><strong>Pay securely</strong><p>Payments are processed by Cashfree.</p></div>
+  <div><span>03</span><strong>Download</strong><p>Your files are emailed and shown once payment is verified.</p></div>
+</section>
+<footer class="foot"><strong>Eboora-Store</strong><nav><a href="/privacy.html">Privacy</a><a href="/terms.html">Terms</a><a href="/refund.html">Refunds</a><a href="/resend.html">Order help</a></nav></footer>
 </div>
 <script src="/catalog.js" defer></script>
 <script src="/guard.js" defer></script>

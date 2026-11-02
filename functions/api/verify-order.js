@@ -1,6 +1,6 @@
 // GET /api/verify-order?order_id=...
 // The customer-facing page never decides payment success from the URL alone.
-import { json, fetchCashfreeOrder, validOrderId, amountMatches, makeDownloadUrl, maskEmail } from "../_lib/commerce.js";
+import { json, fetchCashfreeOrder, validOrderId, amountMatches, makeDownloadUrl, maskEmail, fetchCashfreePayments } from "../_lib/commerce.js";
 import { clientIp, countHit } from "../_lib/ratelimit.js";
 import { getProductById } from "../_lib/products.js";
 
@@ -37,6 +37,8 @@ export async function onRequestGet({ request, env }) {
     return json({ paid: false, status: "ORDER_AMOUNT_MISMATCH" }, 409);
   }
   if (cashfreeOrder.order_status !== "PAID") {
+    const failure = await failureReason(env, orderId, cashfreeOrder.order_status);
+    if (failure) return json({ paid: false, status: "FAILED", reason: failure });
     return json({ paid: false, status: String(cashfreeOrder.order_status || "PENDING") });
   }
 
@@ -69,4 +71,19 @@ async function productTracking(env, productId){
       productName: (p && p.name) ? String(p.name) : ""
     };
   }catch(_){ return {pixelId:"", productId:String(productId||""), productName:""}; }
+}
+
+// v72: turn Cashfree's attempt history into a clear reason. Returns "" while a payment is still possible or pending.
+async function failureReason(env, orderId, orderStatus){
+  const status = String(orderStatus || "").toUpperCase();
+  if (["EXPIRED", "TERMINATED", "TERMINATION_REQUESTED", "CANCELLED"].includes(status)) return "The payment window expired or was cancelled.";
+  try{
+    const attempts = await fetchCashfreePayments(env, orderId);
+    if (!attempts.length) return "";
+    const states = attempts.map(a => String(a.payment_status || "").toUpperCase());
+    if (states.some(x => x === "SUCCESS" || x === "PENDING" || x === "NOT_ATTEMPTED")) return "";
+    if (states.includes("USER_DROPPED")) return "You closed the payment page before completing the payment.";
+    const message = String((attempts[attempts.length - 1] || {}).payment_message || "").trim();
+    return message ? "Payment failed: " + message.slice(0, 160) : "Payment failed. Please try again.";
+  }catch(_){ return ""; }
 }

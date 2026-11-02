@@ -98,3 +98,19 @@ export function normalizePhone(phone) {
   if (digits.length === 12 && digits.startsWith("91")) digits = digits.slice(2);
   return digits.length === 10 ? digits : "";
 }
+
+
+// v72: payment attempts for an order. Each attempt has payment_status (SUCCESS, FAILED, USER_DROPPED, PENDING...) and payment_message (the reason).
+export async function fetchCashfreePayments(env, orderId) {
+  if (!hasCashfreeConfig(env)) throw new Error("Cashfree API credentials are not configured.");
+  const response = await fetch(`${cashfreeBase(env)}/orders/${encodeURIComponent(orderId)}/payments`, {
+    headers: {
+      "x-client-id": env.CASHFREE_APP_ID,
+      "x-client-secret": env.CASHFREE_SECRET_KEY,
+      "x-api-version": env.CASHFREE_API_VERSION || "2026-01-01"
+    }
+  });
+  if (!response.ok) throw new Error("Cashfree payments lookup failed with status " + response.status);
+  const data = await response.json();
+  return Array.isArray(data) ? data : [];
+}
