@@ -38,7 +38,7 @@ export async function onRequestGet({ request, env }) {
   }
   if (cashfreeOrder.order_status !== "PAID") {
     const failure = await failureReason(env, orderId, cashfreeOrder.order_status);
-    if (failure) return json({ paid: false, status: "FAILED", reason: failure });
+    if (failure) return json({ paid: false, status: "FAILED", reason: failure, productSlug: (await productTracking(env, record.product_id)).slug || "" });
     return json({ paid: false, status: String(cashfreeOrder.order_status || "PENDING") });
   }
 
@@ -68,9 +68,10 @@ async function productTracking(env, productId){
     return {
       pixelId: /^\d{5,20}$/.test(pixel) ? pixel : "",
       productId: String(productId || ""),
-      productName: (p && p.name) ? String(p.name) : ""
+      productName: (p && p.name) ? String(p.name) : "",
+      slug: (p && p.slug) ? String(p.slug) : ""
     };
-  }catch(_){ return {pixelId:"", productId:String(productId||""), productName:""}; }
+  }catch(_){ return {pixelId:"", productId:String(productId||""), productName:"",slug:""}; }
 }
 
 // v72: turn Cashfree's attempt history into a clear reason. Returns "" while a payment is still possible or pending.

@@ -60,3 +60,8 @@ a{color:inherit}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--cyan);outline-offset:3px}
 @media(max-width:760px){.promises{grid-template-columns:1fr}.hero{border-radius:20px}}
 @media(max-width:600px){.grid{grid-template-columns:1fr}.top nav{width:100%}}
+
+/* v76: smooth tap feedback on product cards; no blue selection flash when holding a card */
+.item{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .18s ease,box-shadow .18s ease}
+.item::selection,.item *::selection{background:transparent}
+.item:active{transform:scale(.985)}
