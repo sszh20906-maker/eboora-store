@@ -1,0 +1,72 @@
+/* Eboora V84 — prevent viewport-wide pseudo-elements from widening the document.
+   The previous full-bleed hero background used negative 100vw insets. On mobile
+   browsers this could create a wider layout viewport, making the page appear
+   zoomed out and confined to the left side of the screen. */
+html {
+  overflow-x: clip;
+}
+
+body.lp74 {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+body.lp74 .lp-wrap {
+  width: 100%;
+  max-width: 1160px;
+  margin-inline: auto;
+}
+
+body.lp74 .lp-hero {
+  min-width: 0;
+}
+
+body.lp74 .lp-hero::before {
+  inset: 0;
+}
+
+body.lp74 .lp-copy,
+body.lp74 .lp-visual,
+body.lp74 .lp-section,
+body.lp74 .lp-grid,
+body.lp74 .lp-faq,
+body.lp74 .lp-offer-card {
+  min-width: 0;
+  max-width: 100%;
+}
+
+body.lp74 img,
+body.lp74 iframe {
+  max-width: 100%;
+}
+
+@media (max-width: 820px) {
+  body.lp74 .lp-wrap {
+    padding-left: 17px;
+    padding-right: 17px;
+  }
+}
+
+@media (max-width: 480px) {
+  body.lp74 .lp-wrap {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+
+  body.lp74 .lp-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  body.lp74 .lp-faq {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+}
+
+@media (max-width: 480px) {
+  body.lp74 .lp-top {
+    margin-left: -16px;
+    margin-right: -16px;
+  }
+}
