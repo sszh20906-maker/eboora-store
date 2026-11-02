@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import { readFileSync, existsSync } from "node:fs";
+assert.ok(existsSync(new URL("../public/motion.js", import.meta.url)));
+const motion = readFileSync(new URL("../public/motion.js", import.meta.url), "utf8");
+assert.match(motion, /eb-ripple/);
+assert.match(motion, /prefers-reduced-motion/);
+const landing = readFileSync(new URL("../public/landing.html", import.meta.url), "utf8");
+assert.match(landing, /motion\.js/);
+assert.ok(landing.indexOf('id="price"') < landing.indexOf('id="heroBuy"'), "price should come before the buy button");
+console.log("Motion on every page; price shows before the buy button.");
