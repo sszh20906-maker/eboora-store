@@ -1,0 +1,37 @@
+/* v81: mobile usability and text-selection fixes; no checkout/API behaviour changed. */
+/* Keep checkout dialogs usable on short mobile screens and allow the dialog itself to scroll. */
+.lp74 .checkout-dialog,
+dialog#checkoutDialog {
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+/* The store catalogue should allow normal text selection/copying and readable focus states. */
+html, html * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.item, .item img {
+  -webkit-user-select: none;
+  user-select: none;
+}
+.item:focus-visible, .quick-view:focus-visible {
+  outline: 3px solid #06b6d4;
+  outline-offset: 3px;
+}
+/* Avoid narrow coupon controls overflowing on small phones. */
+.lp74 .coupon-controls { min-width: 0; }
+.lp74 .coupon-controls input { min-width: 0; width: 1%; }
+.lp74 .coupon-apply { flex: 0 0 auto; min-height: 46px; white-space: nowrap; }
+@media (max-width: 600px) {
+  .lp74 .checkout-main { padding: 18px; }
+  .lp74 .checkout-form { gap: 12px; }
+  .lp74 .checkout-assurance { justify-content: flex-start; font-size: 12px; }
+  .lp74 #stickyBar.sticky { padding: 10px 12px; padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+}
+.item * {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.item img { -webkit-user-select: none; user-select: none; }
