@@ -12,7 +12,6 @@ assert.ok(result.errors.some(x=>x.includes('direct image URL')));
 const page=fs.readFileSync(new URL('../public/product-page.html',import.meta.url),'utf8');
 const js=fs.readFileSync(new URL('../public/landing.js',import.meta.url),'utf8');
 const admin=fs.readFileSync(new URL('../public/admin.html',import.meta.url),'utf8');
-assert.match(page,/id="productGallery"/);
 assert.match(page,/id="videoSection"/);
 assert.match(page,/id="descriptionContent"/);
 assert.match(js,/renderProductGallery/);

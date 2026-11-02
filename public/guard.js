@@ -1,7 +1,7 @@
 // Text can be selected only after a 2.5 second press-and-hold, so it is not copied by accident.
 (function () {
   var HOLD = 2500, timer = null;
-  function enable() { document.documentElement.classList.add('allow-select'); }
+  function enable() { /* v78: never turn on selection; it painted the whole screen blue */ }
   function disable() { document.documentElement.classList.remove('allow-select'); }
   document.addEventListener('pointerdown', function (e) {
     if (e.target.closest && e.target.closest('input,textarea,select,button,a')) return;

@@ -65,3 +65,9 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 .item{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .18s ease,box-shadow .18s ease}
 .item::selection,.item *::selection{background:transparent}
 .item:active{transform:scale(.985)}
+
+/* v78: product card press feedback: a gentle sink and shadow change, no colour overlay */
+.item{-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;transition:transform .2s cubic-bezier(.2,.7,.2,1),box-shadow .2s ease}
+.item *,.item::selection,.item *::selection{background-color:transparent;-webkit-user-select:none;user-select:none}
+.item .name,.item .price,.item .muted,.item .cta{background:none}
+.item:active{transform:scale(.975);box-shadow:0 6px 14px rgba(15,23,42,.08)}

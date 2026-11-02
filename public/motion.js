@@ -3,9 +3,9 @@
   var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   var css = [
     '::selection{background:transparent;color:inherit}',
-    'body.eb-in{animation:eb-fade .5s cubic-bezier(.2,.7,.2,1) both}',
+    'body.eb-in{animation:eb-fade .5s cubic-bezier(.2,.7,.2,1) both}','*{-webkit-tap-highlight-color:transparent}',
     'body.eb-leave{opacity:0;transition:opacity .22s ease}',
-    '@keyframes eb-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}',
+    '@keyframes eb-fade{from{opacity:0}to{opacity:1}}',
     '.eb-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.38);transform:scale(0);opacity:.9;pointer-events:none;animation:eb-ripple .65s ease-out forwards}',
     '@keyframes eb-ripple{to{transform:scale(1);opacity:0}}',
     '.eb-reveal{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}',
@@ -25,7 +25,8 @@
   // ripple on every tap or click
   if (!reduce) {
     document.addEventListener('pointerdown', function (e) {
-      var t = e.target.closest && e.target.closest('a,button,.btn,.item,.chips li,.coupon-apply,.quick-view');
+      var t = e.target.closest && e.target.closest('a,button,.btn,.chips li,.coupon-apply,.quick-view');
+      if (t && t.classList.contains('item')) return;
       if (!t || t.disabled) return;
       var r = t.getBoundingClientRect();
       var size = Math.max(r.width, r.height) * 2;
@@ -55,7 +56,7 @@
 
   // reveal sections and cards as they scroll into view
   function reveal() {
-    var items = document.querySelectorAll('section:not(.hero):not(.lp-hero), .item, .lp-grid > *, .promises > div, .foot, .lp-footer');
+    var items = Array.prototype.filter.call(document.querySelectorAll('section:not(.hero):not(.lp-hero), .item, .lp-grid > *, .promises > div, .foot, .lp-footer'), function (el) { return !el.closest('dialog'); });
     if (!items.length) return;
     if (!('IntersectionObserver' in window) || reduce) return;
     var io = new IntersectionObserver(function (entries) {

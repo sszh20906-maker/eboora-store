@@ -85,3 +85,6 @@
 .lp74 a,.lp74 button{-webkit-tap-highlight-color:transparent;transition:transform .15s ease,opacity .15s ease}
 .lp74 .btn:active,.lp74 button:active{transform:scale(.97)}
 @media (prefers-reduced-motion:reduce){.lp74 *,.lp74 *::before,.lp74 *::after{animation:none!important;transition:none!important}}
+
+/* v78: one hero buy action removed; sticky bar and offer card remain */
+.lp74 #heroBuy{display:none!important}
