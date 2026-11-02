@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const api = readFileSync(new URL('../functions/api/verify-order.js', import.meta.url), 'utf8');
+const lib = readFileSync(new URL('../functions/_lib/commerce.js', import.meta.url), 'utf8');
+const webhook = readFileSync(new URL('../functions/api/cashfree-webhook.js', import.meta.url), 'utf8');
+const thankYou = readFileSync(new URL('../public/thank-you.js', import.meta.url), 'utf8');
+assert.match(api, /const latestStatus = String\(latest\.payment_status/);
+assert.match(api, /latestStatus === "FAILED"/);
+assert.match(api, /error_details\?\.error_description/);
+assert.match(lib, /Array\.isArray\(data\?\.payments\)/);
+assert.match(webhook, /A failed \*attempt\* must not mark the whole order FAILED/);
+assert.match(thankYou, /d\.status==="FAILED"/);
+console.log('V85 payment failure detection regression checks passed.');

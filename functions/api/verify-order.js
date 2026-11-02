@@ -81,10 +81,25 @@ async function failureReason(env, orderId, orderStatus){
   try{
     const attempts = await fetchCashfreePayments(env, orderId);
     if (!attempts.length) return "";
-    const states = attempts.map(a => String(a.payment_status || "").toUpperCase());
-    if (states.some(x => x === "SUCCESS" || x === "PENDING" || x === "NOT_ATTEMPTED")) return "";
-    if (states.includes("USER_DROPPED")) return "You closed the payment page before completing the payment.";
-    const message = String((attempts[attempts.length - 1] || {}).payment_message || "").trim();
-    return message ? "Payment failed: " + message.slice(0, 160) : "Payment failed. Please try again.";
-  }catch(_){ return ""; }
+    // Evaluate the newest attempt only. Older failed attempts must not keep a
+    // later in-progress retry pending forever, and a failed attempt must not
+    // mark an order failed if a newer attempt is still pending.
+    const sorted = [...attempts].sort((a,b) => {
+      const ta = Date.parse(a.payment_time || a.payment_completion_time || a.created_at || "") || 0;
+      const tb = Date.parse(b.payment_time || b.payment_completion_time || b.created_at || "") || 0;
+      return tb - ta;
+    });
+    const latest = sorted[0] || {};
+    const latestStatus = String(latest.payment_status || "").toUpperCase();
+    if (["SUCCESS", "PENDING", "NOT_ATTEMPTED", "PROCESSING"].includes(latestStatus)) return "";
+    if (latestStatus === "USER_DROPPED") return "You closed the payment page before completing the payment.";
+    if (latestStatus === "FAILED" || latestStatus === "CANCELLED" || latestStatus === "VOID") {
+      const message = String(latest.payment_message || latest.error_details?.error_description || latest.error_details?.error_reason || "").trim();
+      return message ? "Payment failed: " + message.slice(0, 160) : "Payment failed. Please try again.";
+    }
+    return "";
+  }catch(error){
+    console.error("Cashfree payment attempts lookup failed", error.status || "network", error.message);
+    return "";
+  }
 }

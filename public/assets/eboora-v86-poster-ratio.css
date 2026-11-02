@@ -1,0 +1,18 @@
+/* V86: Match the landing-page product poster to the supplied artwork ratio (1536 × 857). */
+.lp74 #cover {
+  width: 100%;
+  aspect-ratio: 1536 / 857 !important;
+  height: auto !important;
+  overflow: hidden !important;
+  padding: 12px !important;
+  box-sizing: border-box;
+}
+.lp74 #coverImg {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  aspect-ratio: 1536 / 857 !important;
+  object-fit: contain !important;
+  border-radius: 14px;
+  background: #eef2f7;
+}

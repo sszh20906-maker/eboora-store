@@ -112,5 +112,10 @@ export async function fetchCashfreePayments(env, orderId) {
   });
   if (!response.ok) throw new Error("Cashfree payments lookup failed with status " + response.status);
   const data = await response.json();
-  return Array.isArray(data) ? data : [];
+  // Cashfree responses have appeared as either a bare array or an object
+  // containing the attempts. Normalize both shapes for status detection.
+  if (Array.isArray(data)) return data;
+  if (Array.isArray(data?.payments)) return data.payments;
+  if (Array.isArray(data?.data)) return data.data;
+  return [];
 }
