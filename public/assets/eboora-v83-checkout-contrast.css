@@ -1,0 +1,112 @@
+/* Eboora V83 hotfix: isolate the current light product-page and checkout design
+   from legacy V34/V37 dark checkout rules that used high-specificity !important. */
+html:has(body.lp74) {
+  color-scheme: light !important;
+  background: #f7f9fc !important;
+}
+body.lp74 {
+  color-scheme: light !important;
+  background: #f7f9fc !important;
+  color: #10203b !important;
+}
+#checkoutDialog.checkout-dialog {
+  color-scheme: light !important;
+  background: #ffffff !important;
+  color: #172334 !important;
+  border: 1px solid #e2e8f0 !important;
+  max-height: calc(100vh - 24px) !important;
+  max-height: calc(100dvh - 24px) !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain;
+}
+#checkoutDialog.checkout-dialog .checkout-main {
+  background: #ffffff !important;
+  color: #172334 !important;
+}
+#checkoutDialog.checkout-dialog h2,
+#checkoutDialog.checkout-dialog h3 {
+  color: #172b46 !important;
+}
+#checkoutDialog.checkout-dialog p,
+#checkoutDialog.checkout-dialog small,
+#checkoutDialog.checkout-dialog .checkout-assurance,
+#checkoutDialog.checkout-dialog .checkout-privacy {
+  color: #64748b !important;
+  opacity: 1 !important;
+}
+#checkoutDialog.checkout-dialog label,
+#checkoutDialog.checkout-dialog .checkout-step {
+  color: #263449 !important;
+  opacity: 1 !important;
+}
+#checkoutDialog.checkout-dialog .checkout-form input {
+  color-scheme: light !important;
+  background: #fbfcfe !important;
+  color: #172334 !important;
+  -webkit-text-fill-color: #172334 !important;
+  border: 1px solid #dce2eb !important;
+  opacity: 1 !important;
+}
+#checkoutDialog.checkout-dialog .checkout-form input::placeholder {
+  color: #8994a4 !important;
+  -webkit-text-fill-color: #8994a4 !important;
+  opacity: 1 !important;
+}
+#checkoutDialog.checkout-dialog .checkout-form input:focus {
+  background: #ffffff !important;
+  border-color: var(--checkout-accent, #1a5fd6) !important;
+  box-shadow: 0 0 0 3px rgba(26, 95, 214, .14) !important;
+}
+#checkoutDialog.checkout-dialog .checkout-form input:-webkit-autofill,
+#checkoutDialog.checkout-dialog .checkout-form input:-webkit-autofill:hover,
+#checkoutDialog.checkout-dialog .checkout-form input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #172334 !important;
+  -webkit-box-shadow: 0 0 0 1000px #fbfcfe inset !important;
+  caret-color: #172334 !important;
+}
+#checkoutDialog.checkout-dialog .phone-input {
+  background: #fbfcfe !important;
+  border-color: #dce2eb !important;
+}
+#checkoutDialog.checkout-dialog .phone-input span {
+  color: #46566b !important;
+}
+#checkoutDialog.checkout-dialog .coupon-card {
+  background: #fafbfd !important;
+}
+#checkoutDialog.checkout-dialog .coupon-title strong {
+  color: #293548 !important;
+}
+#checkoutDialog.checkout-dialog .coupon-title small,
+#checkoutDialog.checkout-dialog .field small,
+#checkoutDialog.checkout-dialog .coupon-card .help {
+  color: #64748b !important;
+}
+#checkoutDialog.checkout-dialog .coupon-apply {
+  background: #172b46 !important;
+  color: #ffffff !important;
+}
+@media (max-width: 680px) {
+  #checkoutDialog.checkout-dialog {
+    width: calc(100% - 20px) !important;
+    max-height: calc(100vh - 20px) !important;
+    max-height: calc(100dvh - 20px) !important;
+    border-radius: 20px !important;
+  }
+  #checkoutDialog.checkout-dialog .checkout-main {
+    padding: 17px 16px 20px !important;
+  }
+  #checkoutDialog.checkout-dialog .checkout-head {
+    margin-bottom: 13px !important;
+  }
+  #checkoutDialog.checkout-dialog .checkout-form .field {
+    margin-bottom: 10px !important;
+  }
+  #checkoutDialog.checkout-dialog .checkout-form input {
+    min-height: 44px !important;
+  }
+  #checkoutDialog.checkout-dialog .coupon-card {
+    margin: 12px 0 !important;
+    padding: 11px !important;
+  }
+}
