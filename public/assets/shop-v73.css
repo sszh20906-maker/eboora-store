@@ -71,3 +71,5 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{ou
 .item *,.item::selection,.item *::selection{background-color:transparent;-webkit-user-select:none;user-select:none}
 .item .name,.item .price,.item .muted,.item .cta{background:none}
 .item:active{transform:scale(.975);box-shadow:0 6px 14px rgba(15,23,42,.08)}
+/* v89: storefront card images use the same 16:9 horizontal cover */
+.item>img{aspect-ratio:16/9!important;object-fit:contain!important;background:#0b1424!important}
