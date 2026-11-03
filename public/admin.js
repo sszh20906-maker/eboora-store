@@ -42,6 +42,8 @@ function readForm() {
     deliveryUrl: $('deliveryUrl').value.trim(),
     theme: $('theme').value,
     accentColor: $('useAccent').checked ? $('accentColor').value : '',
+    buyButtonText: $('buyButtonText').value.trim(),
+    buyButtonColor: $('useBuyColor').checked ? $('buyButtonColor').value : '',
     benefits: lines($('benefits').value).map(l => { const [title, description] = splitPipe(l); return { title, description }; }),
     included: lines($('included').value).map(title => ({ title })),
     faqs: lines($('faqs').value).map(l => { const [question, answer] = splitPipe(l); return { question, answer }; }).filter(f => f.question && f.answer),
@@ -83,6 +85,9 @@ function fillForm(p) {
   $('theme').value = p.theme || 'tech';
   $('useAccent').checked = Boolean(p.accentColor);
   $('accentColor').value = /^#[0-9a-fA-F]{6}$/.test(p.accentColor || '') ? p.accentColor : '#2563eb';
+  $('buyButtonText').value = p.buyButtonText || '';
+  $('useBuyColor').checked = Boolean(p.buyButtonColor);
+  $('buyButtonColor').value = /^#[0-9a-fA-F]{6}$/.test(p.buyButtonColor || '') ? p.buyButtonColor : '#2563eb';
   updateThemePreview();
   $('benefits').value = (p.benefits || []).map(b => b.description ? b.title + ' | ' + b.description : b.title).join('\n');
   $('included').value = (p.included || []).map(x => x.title).join('\n');

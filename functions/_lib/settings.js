@@ -123,6 +123,8 @@ export function validateConfig(input) {
     deliveryUrl: validateDriveUrl(input.deliveryUrl),
     theme: ["navy", "forest", "violet", "sunset", "aggressive", "luxury", "soft", "tech"].includes(input.theme) ? input.theme : "tech",
     accentColor: /^#[0-9a-fA-F]{6}$/.test(String(input.accentColor || "")) ? input.accentColor : "",
+    buyButtonText: clean(input.buyButtonText, 40) || "",
+    buyButtonColor: /^#[0-9a-fA-F]{6}$/.test(String(input.buyButtonColor || "")) ? input.buyButtonColor : "",
     benefits,
     included,
     faqs,
