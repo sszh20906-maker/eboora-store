@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+const landing = readFileSync(new URL('../public/landing.html', import.meta.url), 'utf8');
+const product = readFileSync(new URL('../public/product-page.html', import.meta.url), 'utf8');
+const js = readFileSync(new URL('../public/landing.js', import.meta.url), 'utf8');
+const css = readFileSync(new URL('../public/assets/offer-timer-v95.css', import.meta.url), 'utf8');
+assert.equal(product, landing, 'landing and product pages must remain identical');
+for (const id of ['offerTimer','offerTimerTitle','offerTimerMessage','offerTimerMinutes','offerTimerSeconds','offerTimerFoot']) assert.ok(landing.includes(`id="${id}"`), `missing ${id}`);
+assert.match(landing, /offer-timer-v95\.css\?v=95/);
+assert.match(landing, /landing\.js\?v=95/);
+assert.match(js, /15\+Math\.floor\(Math\.random\(\)\*11\)/, 'timer duration must randomize from 15 to 25 minutes');
+assert.match(js, /OFFER EXTENDED/);
+assert.match(js, /Your ₹299 offer is still available/);
+assert.match(js, /localStorage\.setItem\(key/);
+assert.match(js, /initOfferTimer\(\)/);
+assert.match(css, /is-extended/);
+console.log('V95 per-visitor 15–25 minute offer reminder, extension state, responsive styling and identical product page checks passed.');
