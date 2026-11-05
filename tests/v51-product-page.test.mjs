@@ -13,7 +13,7 @@ const page=fs.readFileSync(new URL('../public/product-page.html',import.meta.url
 const js=fs.readFileSync(new URL('../public/landing.js',import.meta.url),'utf8');
 const admin=fs.readFileSync(new URL('../public/admin.html',import.meta.url),'utf8');
 assert.match(page,/id="videoSection"/);
-assert.match(page,/id="description" class="lp-description"/);
+assert.match(page,/id="descriptionContent"/);
 assert.match(js,/renderProductGallery/);
 assert.match(js,/Compatibility: older storefronts stored the cover in the legacy store config/);
 assert.match(js,/fetch\('\/api\/config',{cache:'no-store'}\)/);
