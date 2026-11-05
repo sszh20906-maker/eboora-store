@@ -21,3 +21,15 @@
 @keyframes stickySaveGlow{0%{transform:scale(.96);opacity:.65}75%,100%{transform:scale(1.12);opacity:0}}
 @media(max-width:420px){.sticky{gap:7px;padding:9px 12px}.sticky-savings{min-width:75px;padding:5px 6px;border-radius:10px}.sticky-savings-main{font-size:.62rem}.sticky-savings-sub{font-size:.58rem}.sticky #stickyBuy{padding:11px 13px;font-size:.92rem}.sticky-price-wrap .lp-price{font-size:1rem}.sticky-price-wrap .lp-micro{font-size:.68rem}}
 @media(prefers-reduced-motion:reduce){.sticky-savings,.sticky-savings:after{animation:none}}
+
+/* V97: give the sticky savings badge more room and stronger readability */
+.sticky-savings{min-width:112px;min-height:70px;padding:9px 12px;gap:3px;border-radius:14px;box-shadow:0 5px 16px rgba(183,119,20,.18)}
+.sticky-savings-fire{font-size:1rem}
+.sticky-savings-main{font-size:.78rem;line-height:1.2}
+.sticky-savings-sub{font-size:.7rem;line-height:1.2}
+@media(max-width:420px){
+ .sticky-savings{min-width:98px;min-height:66px;padding:8px 9px;border-radius:12px;gap:3px}
+ .sticky-savings-fire{font-size:.95rem}
+ .sticky-savings-main{font-size:.72rem}
+ .sticky-savings-sub{font-size:.66rem}
+}

@@ -6,7 +6,7 @@ const js = readFileSync(new URL('../public/landing.js', import.meta.url), 'utf8'
 const css = readFileSync(new URL('../public/assets/offer-timer-v95.css', import.meta.url), 'utf8');
 assert.equal(product, landing, 'landing and product pages must remain identical');
 for (const id of ['offerTimer','offerTimerTitle','offerTimerMessage','offerTimerMinutes','offerTimerSeconds','offerTimerFoot','stickySavings','stickySavingsAmount','stickySavingsPercent']) assert.ok(landing.includes(`id="${id}"`), `missing ${id}`);
-assert.match(landing, /offer-timer-v95\.css\?v=96/);
+assert.match(landing, /offer-timer-v95\.css\?v=97/);
 assert.match(landing, /landing\.js\?v=95/);
 assert.match(js, /15\+Math\.floor\(Math\.random\(\)\*11\)/, 'timer duration must randomize from 15 to 25 minutes');
 assert.match(js, /OFFER EXTENDED/);
