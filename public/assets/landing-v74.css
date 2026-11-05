@@ -95,3 +95,9 @@
 /* v98: description keeps the admin's line breaks and spacing */
 .lp74 .lp-lead p{margin:0 0 14px;font-size:inherit;color:inherit}
 .lp74 .lp-lead ul,.lp74 .lp-lead ol{margin:0 0 14px 20px;padding:0}
+
+/* v99: dark offer card text keeps structure and stays readable */
+#offerDescription p{margin:0 0 14px;color:#c5c8dc;font-size:inherit;line-height:1.6}
+#offerDescription h2,#offerDescription h3,#offerDescription h4{color:#fff;margin:22px 0 10px;line-height:1.3;font-size:1.15rem}
+#offerDescription ul,#offerDescription ol{margin:0 0 14px 22px;padding:0;color:#c5c8dc}
+#offerDescription li{margin:6px 0;line-height:1.55}
