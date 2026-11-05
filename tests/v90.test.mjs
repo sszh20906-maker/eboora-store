@@ -1,0 +1,11 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+const email = readFileSync(new URL("../functions/_lib/email.js", import.meta.url), "utf8");
+const hook = readFileSync(new URL("../functions/api/cashfree-webhook.js", import.meta.url), "utf8");
+const verify = readFileSync(new URL("../functions/api/verify-order.js", import.meta.url), "utf8");
+assert.match(email, /export async function sendDownloadEmail/);
+assert.match(email, /Idempotency-Key/);
+assert.match(hook, /import \{ sendDownloadEmail \} from "\.\.\/_lib\/email\.js"/);
+assert.doesNotMatch(hook, /async function sendDownloadEmail/);
+assert.match(verify, /sendDownloadEmail\(env, rec, orderId, url\)/);
+console.log("Download email goes out after payment from the webhook and from the verify step, once.");
