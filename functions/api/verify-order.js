@@ -3,7 +3,6 @@
 import { json, fetchCashfreeOrder, validOrderId, amountMatches, makeDownloadUrl, maskEmail, fetchCashfreePayments } from "../_lib/commerce.js";
 import { clientIp, countHit } from "../_lib/ratelimit.js";
 import { getProductById } from "../_lib/products.js";
-import { sendDownloadEmail } from "../_lib/email.js";
 
 // The support contact of the product that was bought (not the store-wide one).
 async function supportFor(env, productId) {
@@ -46,15 +45,7 @@ export async function onRequestGet({ request, env }) {
   try {
     await env.ORDERS_DB.prepare("UPDATE orders SET status = 'PAID', paid_at = COALESCE(paid_at, datetime('now')), updated_at = datetime('now') WHERE order_id = ?").bind(orderId).run();
     const downloadUrl = await makeDownloadUrl(env, orderId);
-    try {
-    const rec = await env.ORDERS_DB.prepare("SELECT * FROM orders WHERE order_id = ? LIMIT 1").bind(orderId).first();
-    if (rec && rec.email_status !== "SENT") {
-      const url = await makeDownloadUrl(env, orderId);
-      await sendDownloadEmail(env, rec, orderId, url);
-      await env.ORDERS_DB.prepare("UPDATE orders SET email_status = 'SENT', updated_at = datetime('now') WHERE order_id = ?").bind(orderId).run();
-    }
-  } catch (error) { console.error("Download email from verify failed", orderId, error); }
-  return json({
+    return json({
       paid: true,
       amount: record.amount,
       currency: record.currency,
